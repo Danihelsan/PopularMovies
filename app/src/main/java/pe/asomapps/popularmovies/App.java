@@ -19,6 +19,9 @@ public class App extends Application {
         appComponent = DaggerAppComponent.builder().appModule(new AppModule(this)).build();
     }
 
+    public AppComponent getComponent() {
+        return appComponent;
+    }
 
 
 }

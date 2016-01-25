@@ -3,22 +3,22 @@ package pe.asomapps.popularmovies.data.glide;
 import pe.asomapps.popularmovies.BuildConfig;
 
 /**
- * @author Danihelsan
+ * Created by Danihelsan
  */
 public class PosterUrlGenerator {
-    public static final String provideImageUrl(String imagePath, int width){
+    public String provideImageUrl(String imagePath, int width){
         String widthPath;
-        if (width <= 92)
+        if (width <= 138)
             widthPath = "/w92";
-        else if (width <= 154)
+        else if (width <= 231)
             widthPath = "/w154";
-        else if (width <= 185)
+        else if (width <= 278)
             widthPath = "/w185";
-        else if (width <= 342)
+        else if (width <= 513)
             widthPath = "/w342";
-        else if (width <= 500)
+        else if (width <= 750)
             widthPath = "/w500";
-        else if (width <= 780)
+        else if (width <= 1170)
             widthPath = "/w780";
         else
             widthPath = "/original";

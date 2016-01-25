@@ -1,6 +1,5 @@
 package pe.asomapps.popularmovies.data.api;
 
-import com.bumptech.glide.Glide;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.squareup.okhttp.HttpUrl;
@@ -41,7 +40,7 @@ public class ApiModule {
         Interceptor interceptor = new Interceptor() {
             @Override
             public Response intercept(Chain chain) throws IOException {
-                HttpUrl httpUrl = chain.request().httpUrl().newBuilder().addQueryParameter("api_key","value").build();
+                HttpUrl httpUrl = chain.request().httpUrl().newBuilder().addQueryParameter("api_key", BuildConfig.MOVIES_API_KEY).build();
                 return chain.proceed(chain.request().newBuilder().url(httpUrl).build());
             }
         };
@@ -60,14 +59,22 @@ public class ApiModule {
         return gson;
     }
 
-    @Provides @Singleton @Named("default")
-    Gson provideDefaultGson(){
+    @Provides @Singleton @Named("default") Gson provideDefaultGson(){
         Gson gson = new Gson();
         return gson;
     }
 
-    @Provides @Singleton
-    Retrofit provideRetrofit(BaseUrl baseUrl, OkHttpClient okHttpClient, @Named("default") Gson gson){
+    @Provides @Singleton BaseUrl provideBaseUrl(){
+        BaseUrl baseUrl = new BaseUrl() {
+            @Override
+            public HttpUrl url() {
+                return HttpUrl.parse(BuildConfig.MOVIES_BASE_URL);
+            }
+        };
+        return baseUrl;
+    }
+
+    @Provides @Singleton Retrofit provideRetrofit(BaseUrl baseUrl, OkHttpClient okHttpClient, @Named("default") Gson gson){
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(baseUrl)
                 .client(okHttpClient)
@@ -76,5 +83,9 @@ public class ApiModule {
         return retrofit;
     }
 
+    @Provides @Singleton
+    MoviesApi provideMoviesApi(Retrofit retrofit){
+        return retrofit.create(MoviesApi.class);
+    }
 
 }

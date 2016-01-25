@@ -15,14 +15,17 @@ import java.io.InputStream;
  * @author Danihelsan
  */
 public class PosterUrlLoader extends BaseGlideUrlLoader<String> {
+    private PosterUrlGenerator urlGenerator;
     public PosterUrlLoader(Context context, ModelCache<String, GlideUrl> modelCache) {
         super(context, modelCache);
     }
 
     @Override
     protected String getUrl(String imagePath, int width, int height) {
-        String imageUrl = PosterUrlGenerator.provideImageUrl(imagePath, width);
-        //String imageUrl = "http://image.tmdb.org/t/p/w185/nBNZadXqJSdt05SHLqgT0HuC5Gm.jpg";
+        if (urlGenerator==null){
+            urlGenerator = new PosterUrlGenerator();
+        }
+        String imageUrl = urlGenerator.provideImageUrl(imagePath, width);
         return imageUrl;
     }
 
