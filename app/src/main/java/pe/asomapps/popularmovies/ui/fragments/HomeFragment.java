@@ -28,7 +28,7 @@ import retrofit.Retrofit;
  * @author Danihelsan
  */
 public class HomeFragment extends BaseFragment implements OnLoadMoreListener, HomeGridAdapter.OnLoadMoreItemClicked, HomeGridAdapter.MovieClickListener{
-    @Bind(R.id.homeGrid) RecyclerView homeGrid;
+    @Bind(R.id.moviesRV) RecyclerView moviesRV;
 
     private int nextPageToLoad = 1;
 
@@ -38,8 +38,8 @@ public class HomeFragment extends BaseFragment implements OnLoadMoreListener, Ho
         View rootView = inflater.inflate(R.layout.fragment_home,container,false);
         ButterKnife.bind(this,rootView);
 
-        HomeGridAdapter adapter = new HomeGridAdapter(homeGrid, new ArrayList<Movie>(), this, this, this);
-        homeGrid.setAdapter(adapter);
+        HomeGridAdapter adapter = new HomeGridAdapter(moviesRV, new ArrayList<Movie>(), this, this, this);
+        moviesRV.setAdapter(adapter);
 
         loadMoreMovies();
         return rootView;
@@ -50,7 +50,7 @@ public class HomeFragment extends BaseFragment implements OnLoadMoreListener, Ho
         @Override
         public void onResponse(Response<DiscoverMoviesResponse> response, Retrofit retrofit) {
             nextPageToLoad = response.body().getPage()+1;
-            HomeGridAdapter adapter = (HomeGridAdapter)homeGrid.getAdapter();
+            HomeGridAdapter adapter = (HomeGridAdapter)moviesRV.getAdapter();
             adapter.removeItem(null);
             adapter.addItems(response.body().getResults());
         }
@@ -58,7 +58,7 @@ public class HomeFragment extends BaseFragment implements OnLoadMoreListener, Ho
         @Override
         public void onFailure(Throwable t) {
             super.onFailure(t);
-            HomeGridAdapter adapter = (HomeGridAdapter)homeGrid.getAdapter();
+            HomeGridAdapter adapter = (HomeGridAdapter)moviesRV.getAdapter();
             adapter.enableLoadingMore();
         }
     }
@@ -72,7 +72,7 @@ public class HomeFragment extends BaseFragment implements OnLoadMoreListener, Ho
         Call call = apiService.loadMovies(MoviesApi.SortOption.POP_DESC.getValue(), nextPageToLoad);
         call.enqueue(new CallbackLoadMovies());
 
-        HomeGridAdapter adapter = (HomeGridAdapter)homeGrid.getAdapter();
+        HomeGridAdapter adapter = (HomeGridAdapter)moviesRV.getAdapter();
         adapter.setLoading(true);
     }
 

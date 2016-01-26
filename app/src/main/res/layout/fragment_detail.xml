@@ -1,6 +1,132 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-</LinearLayout>
+    <TextView
+        android:id="@+id/title"
+        android:layout_width="match_parent"
+        android:layout_height="130dp"
+        android:ellipsize="end"
+        android:gravity="center_vertical"
+        android:lines="2"
+        android:paddingBottom="20dp"
+        android:paddingLeft="20dp"
+        android:paddingRight="20dp"
+        android:paddingTop="20dp"
+        android:textSize="35sp"
+        tools:background="@color/colorPrimaryDark"
+        tools:text="Chappie and Longest Title Ever Existed"
+        tools:textColor="@color/colorPrimaryText"/>
+    <LinearLayout
+        android:id="@+id/detailContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/title"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginTop="10dp"
+        android:orientation="horizontal"
+        android:weightSum="2">
+        <FrameLayout
+            android:id="@+id/detailLeftContainer"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:minHeight="150dp"
+            tools:background="@color/colorPrimary"
+            android:layout_marginRight="5dp">
+            <ImageView
+                android:id="@+id/poster"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_margin="10dp"
+                android:adjustViewBounds="true"
+                android:scaleType="centerCrop"
+                tools:background="@color/colorAccent"
+                tools:src="@mipmap/ic_launcher"/>
+        </FrameLayout>
+        <LinearLayout
+            android:layout_marginLeft="5dp"
+            android:id="@+id/detailRightContainer"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:padding="5dp"
+            android:orientation="vertical"
+            tools:background="@color/cardview_dark_background">
+            <TextView
+                android:id="@+id/year"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                tools:text="2015"
+                android:textSize="25sp"
+                android:lines="1"
+                android:ellipsize="end"
+                tools:background="@color/cardview_light_background"/>
+            <TextView
+                android:id="@+id/time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                tools:text="120min"
+                android:lines="1"
+                android:textSize="20sp"
+                android:ellipsize="end"
+                android:layout_marginTop="10dp"
+                tools:background="@color/cardview_light_background"/>
+
+            <TextView
+                android:id="@+id/rating"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                tools:text="8.1/10"
+                android:textSize="15sp"
+                android:lines="1"
+                android:layout_marginTop="10dp"
+                android:ellipsize="end"
+                tools:background="@color/cardview_light_background" />
+            <ImageView
+                android:id="@+id/favorite"
+                android:src="@mipmap/ic_launcher"
+                android:layout_marginTop="10dp"
+                android:textSize="35sp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                tools:background="@color/cardview_light_background" />
+        </LinearLayout>
+    </LinearLayout>
+    <TextView
+        android:id="@+id/description"
+        android:layout_below="@id/detailContainer"
+        android:layout_width="match_parent"
+        android:layout_marginTop="20dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_height="wrap_content"
+        android:text="@string/lorem_ipsum"
+        android:maxLines="4"
+        tools:textColor="@color/colorPrimaryText"
+        tools:background="@color/colorPrimaryDark"
+        android:ellipsize="end"/>
+
+    <View android:id="@+id/separator"
+        android:layout_below="@id/description"
+        android:background="@android:color/black"
+        android:layout_width = "match_parent"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginTop="10dp"
+        android:layout_height="1dp"/>
+
+    <android.support.v7.widget.RecyclerView
+        android:layout_marginTop="10dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_below="@id/separator"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/videosRV"
+        android:layout_width="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        android:layout_height="wrap_content"/>
+</RelativeLayout>
