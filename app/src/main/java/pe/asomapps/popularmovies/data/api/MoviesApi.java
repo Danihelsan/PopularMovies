@@ -1,9 +1,8 @@
 package pe.asomapps.popularmovies.data.api;
 
-import java.util.List;
-
-import pe.asomapps.popularmovies.model.Video;
 import pe.asomapps.popularmovies.model.responses.DiscoverMoviesResponse;
+import pe.asomapps.popularmovies.model.responses.MovieResponse;
+import pe.asomapps.popularmovies.model.responses.ReviewsResponse;
 import retrofit.Call;
 import retrofit.http.GET;
 import retrofit.http.Path;
@@ -13,6 +12,8 @@ import retrofit.http.Query;
  * @author Danihelsan
  */
 public interface MoviesApi {
+     String DETAIL_APPEND = "videos";
+
     enum SortOption{
         POP_DESC("popularity.desc"),
         REV_DESC("revenue.desc"),
@@ -31,10 +32,11 @@ public interface MoviesApi {
     @GET("discover/movie")
     Call<DiscoverMoviesResponse> loadMovies(@Query("sort_by") String sortBy, @Query("page") int page);
 
-    @GET("movie/{id}/videos")
-    Call<List<Video>> loadVideosFromMovie(@Path("id") int movieId);
+    @GET("movie/{id}")
+    Call<MovieResponse> loadMovieDetail(@Path("id") int movieId, @Query("append_to_response") String append_to_response);
 
     @GET("movie/{id}/reviews")
-    Call<List<Video>> loadReviewsFromMovie(@Path("id") int movieId);
+    Call<ReviewsResponse> loadReviews(@Path("id") int movieId);
+
 
 }

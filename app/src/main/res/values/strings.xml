@@ -4,5 +4,8 @@
     <string name="footer_loading_movies">Loading more items...</string>
     <string name="footer_load_movies">Press to load more items...</string>
     <string name="lorem_ipsum">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin eget dolor condimentum, luctus turpis sit amet, iaculis est. Sed euismod nisi in fermentum volutpat. Nam nec dui ut eros vehicula placerat nec ac neque. In eget lectus quis sem ultricies tristique vitae a neque. Duis ut nisi elit. Duis porttitor mauris sollicitudin quam condimentum iaculis et vitae risus. Integer vehicula vitae nisl a scelerisque. Vestibulum sed nunc elit. Duis viverra diam a mauris pellentesque lobortis. Vivamus enim diam, porta a ex et, tempus rhoncus orci. Donec sagittis dapibus ex, eu viverra urna. Curabitur rutrum est aliquet metus mattis, nec iaculis nisi porta.</string>
+    <string name="detail_runtime">%1$d min</string>
+    <string name="detail_rating">%1$s /10</string>
+    <string name="item_video_header">Trailers:</string>
 
 </resources>

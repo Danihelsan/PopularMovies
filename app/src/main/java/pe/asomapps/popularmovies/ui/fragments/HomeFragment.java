@@ -45,7 +45,6 @@ public class HomeFragment extends BaseFragment implements OnLoadMoreListener, Ho
         return rootView;
     }
 
-
     private class CallbackLoadMovies extends DefaultCallback<DiscoverMoviesResponse> {
         @Override
         public void onResponse(Response<DiscoverMoviesResponse> response, Retrofit retrofit) {
@@ -79,7 +78,7 @@ public class HomeFragment extends BaseFragment implements OnLoadMoreListener, Ho
     @Override
     public boolean onMovieClicked(Movie movie, View[] sharedViews) {
         Bundle bundle = new Bundle();
-        bundle.putParcelable(DetailFragment.KEY_MOVIE_CONTENT,movie);
+        bundle.putParcelable(DetailFragment.KEY_MOVIE,movie);
         Intent intent = new Intent(getContext(), DetailActivity.class);
         intent.putExtras(bundle);
         openNewScreen(intent, sharedViews);

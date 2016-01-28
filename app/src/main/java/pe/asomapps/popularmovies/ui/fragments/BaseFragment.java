@@ -32,7 +32,7 @@ public class BaseFragment extends Fragment {
     protected void openNewScreen(Intent intent, View[] sharedViews) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && sharedViews.length>0) {
             Pair<View,String>[] sharedElements = new Pair[sharedViews.length];
-            for (int i=0;i<=sharedViews.length;i++){
+            for (int i=0;i<sharedViews.length;i++){
                 View view = sharedViews[i];
                 sharedElements[i] = new Pair<>(view,view.getTransitionName());
             }

@@ -24,18 +24,18 @@ import butterknife.ButterKnife;
 import pe.asomapps.popularmovies.R;
 import pe.asomapps.popularmovies.model.Movie;
 import pe.asomapps.popularmovies.ui.OnLoadMoreListener;
+import pe.asomapps.popularmovies.ui.fragments.DetailFragment;
 
 /**
  * Created by Danihelsan
  */
-public class HomeGridAdapter extends RecyclerView.Adapter<ViewHolder>{
-    private final String PREFIX_TRANSITION_NAME = "home_detail_image_";
+public class HomeGridAdapter<T> extends RecyclerView.Adapter<ViewHolder>{
     private final int VISIBLE_THRESHOLD = 10;
 
     public static final int ITEM_VIEW_TYPE_ITEM = 0;
     public static final int ITEM_VIEW_TYPE_FOOTER = 1;
 
-    private List<Movie> items;
+    private List<T> items;
 
     private MovieClickListener movieClickListener;
     private OnLoadMoreItemClicked onLoadMoreItemClicked;
@@ -43,7 +43,7 @@ public class HomeGridAdapter extends RecyclerView.Adapter<ViewHolder>{
     private int firstVisibleItem, visibleItemCount, totalItemCount, previousTotal = 0;
     private boolean loading = true;
 
-    public HomeGridAdapter(RecyclerView recyclerView, List<Movie> items, OnLoadMoreListener onLoadMoreListener, MovieClickListener movieClickListener, OnLoadMoreItemClicked onLoadMoreItemClicked) {
+    public HomeGridAdapter(RecyclerView recyclerView, List<T> items, OnLoadMoreListener onLoadMoreListener, MovieClickListener movieClickListener, OnLoadMoreItemClicked onLoadMoreItemClicked) {
         this.items = items;
         this.movieClickListener = movieClickListener;
         this.onLoadMoreItemClicked = onLoadMoreItemClicked;
@@ -115,11 +115,11 @@ public class HomeGridAdapter extends RecyclerView.Adapter<ViewHolder>{
             public void onClick(View v) {
                 if (movieClickListener !=null){
                     int position = ((RecyclerView)parent).getChildAdapterPosition(v);
-                    Movie movie = items.get(position);
+                    Movie movie = (Movie) items.get(position);
 
                     if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
                         MovieHolder holder = new MovieHolder(v);
-                        movieClickListener.onMovieClicked(movie, holder.imageMovie);
+                        movieClickListener.onMovieClicked(movie, holder.poster, holder.favorite);
                     } else{
                         movieClickListener.onMovieClicked(movie);
                     }
@@ -153,15 +153,18 @@ public class HomeGridAdapter extends RecyclerView.Adapter<ViewHolder>{
     }
 
     private void onBindItemViewHolder(ViewHolder holder, int position) {
-        Movie movieEntity = items.get(position);
-        MovieHolder movieHolder = (MovieHolder) holder;
+        Movie movie = (Movie) items.get(position);
+        if (movie!=null){
+            MovieHolder movieHolder = (MovieHolder) holder;
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            movieHolder.imageMovie.setTransitionName(PREFIX_TRANSITION_NAME + position);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                movieHolder.poster.setTransitionName(DetailFragment.KEY_POSTER + movie.getId());
+                movieHolder.favorite.setTransitionName(DetailFragment.KEY_FAVORITE + movie.getId());
+            }
+            String imageUrl = movie.getPosterPath();
+            RequestListener listener = GlidePalette.with(imageUrl).use(GlidePalette.Profile.VIBRANT).intoBackground(movieHolder.rootView);
+            Glide.with(holder.itemView.getContext()).load(imageUrl).listener(listener).into(movieHolder.poster);
         }
-        String imageUrl = movieEntity.getPosterPath();
-        RequestListener listener = GlidePalette.with(imageUrl).use(GlidePalette.Profile.MUTED).intoBackground(movieHolder.rootView);
-        Glide.with(holder.itemView.getContext()).load(imageUrl).listener(listener).into(movieHolder.imageMovie);
     }
 
     private void onBindFooterViewHolder(ViewHolder holder, int position) {
@@ -207,7 +210,8 @@ public class HomeGridAdapter extends RecyclerView.Adapter<ViewHolder>{
 
     static class MovieHolder extends RecyclerView.ViewHolder {
         @Nullable @Bind(R.id.rootView) View rootView;
-        @Nullable @Bind(R.id.imageMovie) ImageView imageMovie;
+        @Nullable @Bind(R.id.poster) ImageView poster;
+        @Nullable @Bind(R.id.favorite) ImageView favorite;
         public MovieHolder(View view) {
             super(view);
             ButterKnife.bind(this,view);
@@ -223,7 +227,7 @@ public class HomeGridAdapter extends RecyclerView.Adapter<ViewHolder>{
         }
     }
 
-    public void resetItems(@NonNull List<Movie> items) {
+    public void resetItems(@NonNull List<T> items) {
         loading = true;
         firstVisibleItem = 0;
         visibleItemCount = 0;
@@ -234,19 +238,19 @@ public class HomeGridAdapter extends RecyclerView.Adapter<ViewHolder>{
         addItems(items);
     }
 
-    public void addItems(@NonNull List<Movie> newItems) {
+    public void addItems(@NonNull List<T> newItems) {
         items.addAll(newItems);
         notifyDataSetChanged();
     }
 
-    public void addItem(Movie item) {
+    public void addItem(T item) {
         if (!items.contains(item)) {
             items.add(item);
             notifyItemInserted(items.size() - 1);
         }
     }
 
-    public void removeItem(Movie item) {
+    public void removeItem(T item) {
         int index = items.indexOf(item);
         if (index != -1) {
             this.items.remove(index);
