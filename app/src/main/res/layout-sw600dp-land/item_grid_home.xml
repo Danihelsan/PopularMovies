@@ -21,13 +21,16 @@
             android:scaleType="centerCrop"
             tools:src="@mipmap/ic_launcher" />
 
-        <ImageView
-            android:layout_alignParentBottom="true"
-            android:layout_alignParentRight="true"
+        <ImageButton
+            android:layout_alignBottom="@id/poster"
+            android:layout_alignRight="@id/poster"
             android:id="@+id/favorite"
-            android:src="@drawable/favorite_off"
+            android:src="@drawable/favorite_selector"
+            android:background="@android:color/transparent"
             android:layout_width="50dp"
+            android:padding="5dp"
             android:adjustViewBounds="true"
+            android:scaleType="centerInside"
 
             android:layout_height="50dp" />
     </RelativeLayout>

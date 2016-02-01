@@ -5,6 +5,7 @@ import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.view.LayoutInflater;
@@ -23,8 +24,9 @@ import butterknife.Bind;
 import butterknife.ButterKnife;
 import pe.asomapps.popularmovies.R;
 import pe.asomapps.popularmovies.model.Movie;
-import pe.asomapps.popularmovies.ui.OnLoadMoreListener;
 import pe.asomapps.popularmovies.ui.fragments.DetailFragment;
+import pe.asomapps.popularmovies.ui.interfaces.FragmentInteractor;
+import pe.asomapps.popularmovies.ui.interfaces.OnLoadMoreListener;
 
 /**
  * Created by Danihelsan
@@ -43,16 +45,22 @@ public class HomeGridAdapter<T> extends RecyclerView.Adapter<ViewHolder>{
     private int firstVisibleItem, visibleItemCount, totalItemCount, previousTotal = 0;
     private boolean loading = true;
 
-    public HomeGridAdapter(RecyclerView recyclerView, List<T> items, OnLoadMoreListener onLoadMoreListener, MovieClickListener movieClickListener, OnLoadMoreItemClicked onLoadMoreItemClicked) {
+    public HomeGridAdapter(RecyclerView recyclerView, List<T> items, OnLoadMoreListener onLoadMoreListener, MovieClickListener movieClickListener, OnLoadMoreItemClicked onLoadMoreItemClicked, FragmentInteractor interactor) {
         this.items = items;
         this.movieClickListener = movieClickListener;
         this.onLoadMoreItemClicked = onLoadMoreItemClicked;
-        customRecyclerView(recyclerView, onLoadMoreListener);
+        customRecyclerView(recyclerView, onLoadMoreListener,interactor);
     }
 
-    private void customRecyclerView(final RecyclerView recyclerView, final OnLoadMoreListener onLoadMoreListener) {
+    private void customRecyclerView(final RecyclerView recyclerView, final OnLoadMoreListener onLoadMoreListener,FragmentInteractor interactor) {
         final int numColumns = recyclerView.getContext().getResources().getConfiguration().orientation + 1;
         final GridLayoutManager recyclerViewManager = new GridLayoutManager(recyclerView.getContext(),numColumns);
+
+        if (interactor!=null && interactor.isTablet() && !interactor.isLandscape()){
+            recyclerViewManager.setOrientation(LinearLayoutManager.HORIZONTAL);
+        } else{
+            recyclerViewManager.setOrientation(LinearLayoutManager.VERTICAL);
+        }
 
         recyclerViewManager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup(){
             @Override
@@ -109,7 +117,7 @@ public class HomeGridAdapter<T> extends RecyclerView.Adapter<ViewHolder>{
     }
 
     private ViewHolder onCreateItemViewHolder(final ViewGroup parent) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.home_grid_item,parent,false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_grid_home,parent,false);
         view.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -156,7 +164,6 @@ public class HomeGridAdapter<T> extends RecyclerView.Adapter<ViewHolder>{
         Movie movie = (Movie) items.get(position);
         if (movie!=null){
             MovieHolder movieHolder = (MovieHolder) holder;
-
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                 movieHolder.poster.setTransitionName(DetailFragment.KEY_POSTER + movie.getId());
                 movieHolder.favorite.setTransitionName(DetailFragment.KEY_FAVORITE + movie.getId());
@@ -256,6 +263,10 @@ public class HomeGridAdapter<T> extends RecyclerView.Adapter<ViewHolder>{
             this.items.remove(index);
             notifyItemRemoved(index);
         }
+    }
+
+    public List<T> getItems() {
+        return items;
     }
 
     public interface MovieClickListener {

@@ -40,14 +40,14 @@
             android:layout_marginRight="10dp"
             android:layout_marginTop="10dp"
             android:orientation="horizontal"
-            android:weightSum="2">
+            android:weightSum="5">
 
             <FrameLayout
                 android:id="@+id/detailLeftContainer"
                 android:layout_width="0dp"
                 android:layout_height="200dp"
                 android:layout_marginRight="5dp"
-                android:layout_weight="1"
+                android:layout_weight="2"
                 android:minHeight="150dp"
                 android:textColor="@color/colorPrimaryText">
 
@@ -115,28 +115,28 @@
                     android:scaleType="centerInside"
                     android:src="@drawable/favorite_selector" />
             </LinearLayout>
-        </LinearLayout>
 
-        <TextView
-            android:id="@+id/description"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/detailContainer"
-            android:layout_marginLeft="10dp"
-            android:layout_marginRight="10dp"
-            android:layout_marginTop="20dp"
-            android:ellipsize="end"
-            android:padding="5dp"
-            android:maxLines="4"
-            android:text="@string/lorem_ipsum"
-            android:textColor="@color/colorWhiteText"
-            tools:background="@color/colorPrimaryDark" />
+            <TextView
+                android:id="@+id/description"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_below="@id/detailContainer"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="10dp"
+                android:layout_weight="2"
+                android:ellipsize="end"
+                android:padding="5dp"
+                android:maxLines="10"
+                android:text="@string/lorem_ipsum"
+                android:textColor="@color/colorWhiteText"
+                tools:background="@color/colorPrimaryDark" />
+        </LinearLayout>
 
         <View
             android:id="@+id/separator"
             android:layout_width="match_parent"
             android:layout_height="1dp"
-            android:layout_below="@id/description"
+            android:layout_below="@id/detailContainer"
             android:layout_marginLeft="10dp"
             android:layout_marginRight="10dp"
             android:layout_marginTop="10dp"

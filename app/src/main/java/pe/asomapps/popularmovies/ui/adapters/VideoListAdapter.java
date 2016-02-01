@@ -3,7 +3,6 @@ package pe.asomapps.popularmovies.ui.adapters;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.OrientationHelper;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.view.LayoutInflater;
@@ -20,14 +19,11 @@ import butterknife.ButterKnife;
 import pe.asomapps.popularmovies.R;
 import pe.asomapps.popularmovies.model.Movie;
 import pe.asomapps.popularmovies.model.Video;
-import pe.asomapps.popularmovies.ui.OnLoadMoreListener;
 
 /**
  * Created by Danihelsan
  */
 public class VideoListAdapter<T> extends RecyclerView.Adapter<ViewHolder> {
-    private final int VISIBLE_THRESHOLD = 10;
-
     public static final int ITEM_VIEW_TYPE_HEADER = 0;
     public static final int ITEM_VIEW_TYPE_ITEM = 1;
 
@@ -35,43 +31,12 @@ public class VideoListAdapter<T> extends RecyclerView.Adapter<ViewHolder> {
 
     private VideoClickListener videoClickListener;
 
-    private int firstVisibleItem, visibleItemCount, totalItemCount, previousTotal = 0;
-    private boolean loading = true;
-
-    public VideoListAdapter(RecyclerView recyclerView, ArrayList<T> items, OnLoadMoreListener onLoadMoreListener, VideoClickListener videoClickListener) {
+    public VideoListAdapter(RecyclerView recyclerView, ArrayList<T> items , VideoClickListener videoClickListener) {
         this.items = items;
         this.videoClickListener = videoClickListener;
-        customRecyclerView(recyclerView, onLoadMoreListener);
-    }
 
-    private void customRecyclerView(RecyclerView recyclerView, final OnLoadMoreListener onLoadMoreListener) {
-        final LinearLayoutManager recyclerViewManager = new LinearLayoutManager(recyclerView.getContext(), OrientationHelper.VERTICAL, false);
-
-        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            @Override
-            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-                totalItemCount = recyclerViewManager.getItemCount();
-                visibleItemCount = recyclerViewManager.getChildCount();
-                firstVisibleItem = recyclerViewManager.findFirstVisibleItemPosition();
-
-                if (loading) {
-                    if (totalItemCount > previousTotal) {
-                        loading = false;
-                        previousTotal = totalItemCount;
-                    }
-                }
-                if (!loading && (totalItemCount - visibleItemCount)
-                        <= (firstVisibleItem + VISIBLE_THRESHOLD)) {
-                    // End has been reached
-
-                    addItem(null);
-                    if (onLoadMoreListener != null) {
-                        onLoadMoreListener.onLoadMore();
-                    }
-                    loading = true;
-                }
-            }
-        });
+        final CustomLinearLayoutManager layoutManager = new CustomLinearLayoutManager(recyclerView.getContext(), LinearLayoutManager.VERTICAL, false);
+        recyclerView.setLayoutManager(layoutManager);
     }
 
     @Override
@@ -92,15 +57,14 @@ public class VideoListAdapter<T> extends RecyclerView.Adapter<ViewHolder> {
     }
 
     private ViewHolder onCreateItemViewHolder(final ViewGroup parent) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.video_list_item,parent,false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_list_video,parent,false);
 
         VideoHolder holder = new VideoHolder(view);
         holder.play.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (videoClickListener!=null){
-                    int position = ((RecyclerView)parent).getChildAdapterPosition(v);
-                    Video video = (Video) items.get(position);
+                    Video video = (Video) v.getTag();
                     videoClickListener.onWatchVideoListener(video);
                 }
             }
@@ -131,12 +95,22 @@ public class VideoListAdapter<T> extends RecyclerView.Adapter<ViewHolder> {
         if (video!=null){
             VideoHolder videoHolder = (VideoHolder) holder;
             videoHolder.name.setText(video.getName());
+            videoHolder.play.setTag(video);
         }
     }
 
     @Override
     public int getItemCount() {
-        return items.size() + 1;
+        return items.size();
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        if (position == 0){
+            return ITEM_VIEW_TYPE_HEADER;
+        } else {
+            return ITEM_VIEW_TYPE_ITEM;
+        }
     }
 
     static class HeaderHolder extends RecyclerView.ViewHolder {
@@ -161,12 +135,6 @@ public class VideoListAdapter<T> extends RecyclerView.Adapter<ViewHolder> {
     }
 
     public void resetItems(@NonNull List<T> items) {
-        loading = true;
-        firstVisibleItem = 0;
-        visibleItemCount = 0;
-        totalItemCount = 0;
-        previousTotal = 0;
-
         items.clear();
         addItems(items);
     }

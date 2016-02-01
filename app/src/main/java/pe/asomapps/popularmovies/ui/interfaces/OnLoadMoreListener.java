@@ -1,4 +1,4 @@
-package pe.asomapps.popularmovies.ui;
+package pe.asomapps.popularmovies.ui.interfaces;
 
 /**
  * Created by Danihelsan

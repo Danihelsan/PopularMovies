@@ -1,8 +1,6 @@
 package pe.asomapps.popularmovies.ui.activities;
 
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -17,7 +15,7 @@ import pe.asomapps.popularmovies.ui.fragments.DetailFragment;
  * Created by Danihelsan
  */
 public class DetailActivity extends AppCompatActivity {
-
+    Fragment detailFragment;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -25,19 +23,22 @@ public class DetailActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayShowHomeEnabled(true);
+        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+            public void onClick(View v) {
+                supportFinishAfterTransition();
             }
         });
 
-        Fragment fragment = new DetailFragment();
-        fragment.setArguments(getIntent().getExtras());
-        getSupportFragmentManager().beginTransaction().replace(R.id.detailFragment,fragment,fragment.getTag()).commit();
+        if (savedInstanceState==null){
+            detailFragment = new DetailFragment();
+            detailFragment.setArguments(getIntent().getExtras());
+            getSupportFragmentManager().beginTransaction().replace(R.id.detailFragment,detailFragment,"detailFragment").commit();
+        } else {
+            detailFragment = getSupportFragmentManager().findFragmentByTag("detailFragment");
+        }
     }
 
     @Override
