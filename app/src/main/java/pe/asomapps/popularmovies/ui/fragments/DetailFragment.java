@@ -32,6 +32,7 @@ import pe.asomapps.popularmovies.model.Video;
 import pe.asomapps.popularmovies.model.responses.MovieResponse;
 import pe.asomapps.popularmovies.ui.adapters.VideoListAdapter;
 import pe.asomapps.popularmovies.ui.interfaces.FragmentInteractor;
+import pe.asomapps.popularmovies.ui.utils.Tag;
 import retrofit.Call;
 import retrofit.Response;
 import retrofit.Retrofit;
@@ -40,6 +41,7 @@ import retrofit.Retrofit;
  * @author Danihelsan
  */
 public class DetailFragment extends BaseFragment implements VideoListAdapter.VideoClickListener{
+    public static final Tag tag = Tag.DETAIL;
     private final String SAVE_MOVIE = "movie";
 
     private final String FORMAT_RATING = "#.#";

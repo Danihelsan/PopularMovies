@@ -31,12 +31,22 @@ public class HomeActivity extends AppCompatActivity implements FragmentInteracto
         homeContainer = (FrameLayout)findViewById(R.id.homeContainer);
         detailContainer = (FrameLayout)findViewById(R.id.detailContainer);
 
-        homeFragment = HomeFragment.newInstance();
-        getSupportFragmentManager().beginTransaction().replace(R.id.homeContainer, homeFragment).commit();
+        String homeTag = HomeFragment.tag.name();
+        if (getSupportFragmentManager().findFragmentByTag(homeTag)==null){
+            homeFragment = HomeFragment.newInstance();
+            getSupportFragmentManager().beginTransaction().replace(R.id.homeContainer, homeFragment,homeTag).commit();
+        } else{
+            homeFragment = getSupportFragmentManager().findFragmentByTag(homeTag);
+        }
 
         if (detailContainer!=null){
-            detailFragment = DetailFragment.newInstance();
-            loadDetail(detailFragment, null);
+            String detailTag = DetailFragment.tag.name();
+            if (getSupportFragmentManager().findFragmentByTag(homeTag)==null){
+                detailFragment = DetailFragment.newInstance();
+                loadDetail(detailFragment, null);
+            } else{
+                detailFragment = getSupportFragmentManager().findFragmentByTag(detailTag);
+            }
         }
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -77,7 +87,7 @@ public class HomeActivity extends AppCompatActivity implements FragmentInteracto
 
     @Override
     public void loadDetail(Fragment fragment, View[] sharedViews) {
-        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction().replace(R.id.detailContainer, fragment);
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction().replace(R.id.detailContainer, fragment, DetailFragment.tag.name());
         if (sharedViews!=null && sharedViews.length>0){
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                 Transition transition = TransitionInflater.from(this).inflateTransition(R.transition.home_detail_transition);

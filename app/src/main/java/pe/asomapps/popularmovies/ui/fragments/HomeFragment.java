@@ -24,6 +24,7 @@ import pe.asomapps.popularmovies.ui.activities.DetailActivity;
 import pe.asomapps.popularmovies.ui.adapters.HomeGridAdapter;
 import pe.asomapps.popularmovies.ui.interfaces.FragmentInteractor;
 import pe.asomapps.popularmovies.ui.interfaces.OnLoadMoreListener;
+import pe.asomapps.popularmovies.ui.utils.Tag;
 import retrofit.Call;
 import retrofit.Response;
 import retrofit.Retrofit;
@@ -32,6 +33,8 @@ import retrofit.Retrofit;
  * @author Danihelsan
  */
 public class HomeFragment extends BaseFragment implements OnLoadMoreListener, HomeGridAdapter.OnLoadMoreItemClicked, HomeGridAdapter.MovieClickListener{
+    public static final Tag tag = Tag.HOME;
+
     private final String SAVE_NEXT_PAGE = "next_page";
     private final String SAVE_ITEM_LIST = "item_list";
 

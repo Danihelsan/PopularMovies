@@ -1,4 +1,4 @@
-package pe.asomapps.popularmovies.data.api;
+package pe.asomapps.popularmovies.internal.di.modules;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -16,6 +16,7 @@ import javax.inject.Singleton;
 import dagger.Module;
 import dagger.Provides;
 import pe.asomapps.popularmovies.BuildConfig;
+import pe.asomapps.popularmovies.data.api.MoviesApi;
 import retrofit.BaseUrl;
 import retrofit.GsonConverterFactory;
 import retrofit.Retrofit;
@@ -54,16 +55,6 @@ public class ApiModule {
         return client;
     }
 
-    @Provides @Singleton @Named("simplied") Gson providesSimplifiedGson(){
-        Gson gson = new GsonBuilder().create();
-        return gson;
-    }
-
-    @Provides @Singleton @Named("default") Gson provideDefaultGson(){
-        Gson gson = new Gson();
-        return gson;
-    }
-
     @Provides @Singleton BaseUrl provideBaseUrl(){
         BaseUrl baseUrl = new BaseUrl() {
             @Override
@@ -72,6 +63,21 @@ public class ApiModule {
             }
         };
         return baseUrl;
+    }
+
+    @Provides
+    @Singleton
+    @Named("simplified")
+    Gson providesSimplifiedGson(){
+        Gson gson = new GsonBuilder().create();
+        return gson;
+    }
+
+    @Provides
+    @Singleton
+    @Named("default") Gson provideDefaultGson(){
+        Gson gson = new Gson();
+        return gson;
     }
 
     @Provides @Singleton Retrofit provideRetrofit(BaseUrl baseUrl, OkHttpClient okHttpClient, @Named("default") Gson gson){
