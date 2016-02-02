@@ -12,7 +12,9 @@ import android.transition.TransitionInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.FrameLayout;
+import android.widget.Spinner;
 
 import pe.asomapps.popularmovies.R;
 import pe.asomapps.popularmovies.ui.fragments.DetailFragment;
@@ -48,8 +50,26 @@ public class HomeActivity extends AppCompatActivity implements FragmentInteracto
                 detailFragment = getSupportFragmentManager().findFragmentByTag(detailTag);
             }
         }
+
+        configureToolBar();
+
+    }
+
+    private void configureToolBar() {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+
+
+        Spinner spinner = (Spinner) toolbar.findViewById(R.id.sort_spinner);
+        spinner.setAdapter(adapter);
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override public void onItemSelected(AdapterView<?> spinner, View view, int position, long itemId) {
+                onOptionSelected(spinner.getAdapter().getMode(position));
+            }
+
+            @Override public void onNothingSelected(AdapterView<?> adapterView) { }
+        });
 
     }
 

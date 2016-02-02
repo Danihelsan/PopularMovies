@@ -10,4 +10,12 @@
     <string name="information_loading">Loading</string>
     <string name="information_unavailable">Unavailable</string>
 
+    <string name="sort_label_popularity">Most Popularity</string>
+    <string name="sort_label_revenue">Most Revenue</string>
+    <string name="sort_label_vote">Most Voted</string>
+
+    <string name="sort_value_popularity">popularity.desc</string>
+    <string name="sort_value_revenue">revenue.desc</string>
+    <string name="sort_value_vote">vote_count.desc</string>
+
 </resources>

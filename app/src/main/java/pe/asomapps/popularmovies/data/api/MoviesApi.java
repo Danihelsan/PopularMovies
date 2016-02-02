@@ -14,21 +14,6 @@ import retrofit.http.Query;
 public interface MoviesApi {
      String DETAIL_APPEND = "videos";
 
-    enum SortOption{
-        POP_DESC("popularity.desc"),
-        REV_DESC("revenue.desc"),
-        VOT_DESC("vote_count.desc");
-
-        private String value;
-        SortOption(String value) {
-            this.value = value;
-        }
-
-        public String getValue() {
-            return value;
-        }
-    }
-
     @GET("discover/movie")
     Call<DiscoverMoviesResponse> loadMovies(@Query("sort_by") String sortBy, @Query("page") int page);
 
