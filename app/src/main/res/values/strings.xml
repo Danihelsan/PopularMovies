@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Popular Movies</string>
+    <string name="app_name">PopMovies</string>
     <string name="action_settings">Settings</string>
     <string name="footer_loading_movies">Loading more items...</string>
     <string name="footer_load_movies">Press to load more items...</string>
@@ -10,12 +10,9 @@
     <string name="information_loading">Loading</string>
     <string name="information_unavailable">Unavailable</string>
 
+    <string name="sort_label_favorites">Favorites</string>
     <string name="sort_label_popularity">Most Popularity</string>
     <string name="sort_label_revenue">Most Revenue</string>
     <string name="sort_label_vote">Most Voted</string>
-
-    <string name="sort_value_popularity">popularity.desc</string>
-    <string name="sort_value_revenue">revenue.desc</string>
-    <string name="sort_value_vote">vote_count.desc</string>
 
 </resources>

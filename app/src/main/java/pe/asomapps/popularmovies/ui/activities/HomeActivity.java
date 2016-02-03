@@ -16,14 +16,24 @@ import android.widget.AdapterView;
 import android.widget.FrameLayout;
 import android.widget.Spinner;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import pe.asomapps.popularmovies.R;
+import pe.asomapps.popularmovies.ui.adapters.SortOptionsAdapter;
 import pe.asomapps.popularmovies.ui.fragments.DetailFragment;
 import pe.asomapps.popularmovies.ui.fragments.HomeFragment;
 import pe.asomapps.popularmovies.ui.interfaces.FragmentInteractor;
+import pe.asomapps.popularmovies.ui.utils.Sort;
+import pe.asomapps.popularmovies.ui.utils.SortOptionItem;
 
 public class HomeActivity extends AppCompatActivity implements FragmentInteractor{
+    private final String SAVE_SORTOPTION = "sort_option";;
     Fragment homeFragment, detailFragment;
     FrameLayout homeContainer,detailContainer;
+
+    private Sort currentSort;
+    private int sortSelected;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,9 +43,14 @@ public class HomeActivity extends AppCompatActivity implements FragmentInteracto
         homeContainer = (FrameLayout)findViewById(R.id.homeContainer);
         detailContainer = (FrameLayout)findViewById(R.id.detailContainer);
 
+        currentSort = Sort.POPULARITY;
+        if (savedInstanceState!=null && savedInstanceState.containsKey(SAVE_SORTOPTION)){
+            currentSort = Sort.fromString(savedInstanceState.getString(SAVE_SORTOPTION));
+        }
+
         String homeTag = HomeFragment.tag.name();
         if (getSupportFragmentManager().findFragmentByTag(homeTag)==null){
-            homeFragment = HomeFragment.newInstance();
+            homeFragment = HomeFragment.newInstance(currentSort.toString());
             getSupportFragmentManager().beginTransaction().replace(R.id.homeContainer, homeFragment,homeTag).commit();
         } else{
             homeFragment = getSupportFragmentManager().findFragmentByTag(homeTag);
@@ -55,21 +70,61 @@ public class HomeActivity extends AppCompatActivity implements FragmentInteracto
 
     }
 
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        outState.putString(SAVE_SORTOPTION,currentSort.toString());
+        super.onSaveInstanceState(outState);
+    }
+
     private void configureToolBar() {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        List<SortOptionsAdapter.Sortable> items = new ArrayList<>();
+        if (userSavedFavorites()) {
+            items.add(new SortOptionItem(getString(R.string.sort_label_favorites), null));
+        }
+        items.add(new SortOptionItem(getString(R.string.sort_label_popularity), Sort.POPULARITY));
+        items.add(new SortOptionItem(getString(R.string.sort_label_revenue), Sort.REVENUE));
+        items.add(new SortOptionItem(getString(R.string.sort_label_vote), Sort.VOTE));
 
-
+        SortOptionsAdapter adapter = new SortOptionsAdapter(items);
         Spinner spinner = (Spinner) toolbar.findViewById(R.id.sort_spinner);
         spinner.setAdapter(adapter);
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override public void onItemSelected(AdapterView<?> spinner, View view, int position, long itemId) {
-                onOptionSelected(spinner.getAdapter().getMode(position));
+            @Override
+            public void onItemSelected(AdapterView<?> spinner, View view, int position, long itemId) {
+                if (spinner.getAdapter() instanceof SortOptionsAdapter) {
+                    onOptionSelected(((SortOptionsAdapter) spinner.getAdapter()).getSortOption(position));
+                }
             }
 
-            @Override public void onNothingSelected(AdapterView<?> adapterView) { }
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+            }
         });
+
+        spinner.setSelection(getSortSelected());
+
+    }
+
+    private boolean userSavedFavorites() {
+        return false;
+    }
+
+    private void onOptionSelected(Object optionSelected){
+        if (optionSelected instanceof SortOptionItem){
+            Sort sort = ((SortOptionItem)optionSelected).getValue();
+            if (sort!=currentSort){
+                currentSort = sort;
+                homeFragment = HomeFragment.newInstance(currentSort.toString());
+                String homeTag = HomeFragment.tag.name();
+                getSupportFragmentManager().beginTransaction().replace(R.id.homeContainer, homeFragment,homeTag).commit();
+                if(isTablet()){
+                    loadDetail(detailFragment, null);
+                }
+            }
+        }
 
     }
 
@@ -119,5 +174,27 @@ public class HomeActivity extends AppCompatActivity implements FragmentInteracto
             }
         }
         transaction.commit();
+    }
+
+    public int getSortSelected() {
+        int sortSelected = -1;
+        if (currentSort!=null){
+            if (currentSort == Sort.POPULARITY){
+                sortSelected = 0;
+            } else if (currentSort ==Sort.REVENUE){
+                sortSelected = 1;
+            } else if (currentSort == Sort.VOTE){
+                sortSelected = 2;
+            }
+
+            if (userSavedFavorites()) {
+                sortSelected += 1;
+            }
+        } else {
+            sortSelected = 0;
+        }
+
+
+        return sortSelected;
     }
 }

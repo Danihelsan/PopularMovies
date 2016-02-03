@@ -24,6 +24,7 @@ import pe.asomapps.popularmovies.ui.activities.DetailActivity;
 import pe.asomapps.popularmovies.ui.adapters.HomeGridAdapter;
 import pe.asomapps.popularmovies.ui.interfaces.FragmentInteractor;
 import pe.asomapps.popularmovies.ui.interfaces.OnLoadMoreListener;
+import pe.asomapps.popularmovies.ui.utils.Sort;
 import pe.asomapps.popularmovies.ui.utils.Tag;
 import retrofit.Call;
 import retrofit.Response;
@@ -35,22 +36,25 @@ import retrofit.Retrofit;
 public class HomeFragment extends BaseFragment implements OnLoadMoreListener, HomeGridAdapter.OnLoadMoreItemClicked, HomeGridAdapter.MovieClickListener{
     public static final Tag tag = Tag.HOME;
 
+    private static final String KEY_SORTOPTION = "sort_option";
+
     private final String SAVE_NEXT_PAGE = "next_page";
     private final String SAVE_ITEM_LIST = "item_list";
+    private final String SAVE_SORTOPTION = KEY_SORTOPTION;
 
     @Bind(R.id.moviesRV) RecyclerView moviesRV;
 
     private int nextPageToLoad;
 
+    private String currentSort;
     private List items;
     private FragmentInteractor interactor;
 
-    public static HomeFragment newInstance() {
-
-        Bundle args = new Bundle();
-
+    public static HomeFragment newInstance(String sortOption) {
+        Bundle bundle = new Bundle();
+        bundle.putString(KEY_SORTOPTION,sortOption);
         HomeFragment fragment = new HomeFragment();
-        fragment.setArguments(args);
+        fragment.setArguments(bundle);
         return fragment;
     }
 
@@ -58,6 +62,11 @@ public class HomeFragment extends BaseFragment implements OnLoadMoreListener, Ho
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         interactor = (getActivity() instanceof FragmentInteractor)? (FragmentInteractor) getActivity() :null;
+
+        currentSort = Sort.POPULARITY.toString();
+        if (getArguments()!=null && getArguments().containsKey(KEY_SORTOPTION)){
+            currentSort = getArguments().getString(KEY_SORTOPTION);
+        }
 
         if(savedInstanceState == null){
             nextPageToLoad = 1;
@@ -102,6 +111,7 @@ public class HomeFragment extends BaseFragment implements OnLoadMoreListener, Ho
             outState.putParcelableArrayList(SAVE_ITEM_LIST, (ArrayList<? extends Parcelable>) items);
         }
         outState.putInt(SAVE_NEXT_PAGE,nextPageToLoad);
+        outState.putString(SAVE_SORTOPTION,currentSort);
         super.onSaveInstanceState(outState);
     }
 
@@ -130,11 +140,24 @@ public class HomeFragment extends BaseFragment implements OnLoadMoreListener, Ho
     }
 
     private void loadMoreMovies() {
-        Call call = apiService.loadMovies(MoviesApi.SortOption.POP_DESC.getValue(), nextPageToLoad);
-        call.enqueue(new CallbackLoadMovies());
+        if (currentSort==null ){
+            //FAVORITE MOVIES
+            if (items.size()==0){
+                //ONLY SHOULD ACCESS HERE THE FIRST TIME
+                loadFavoriteMovies();
+            }
+        } else {
+            //GET SERVICE MOVIES
+            Call call = apiService.loadMovies(currentSort, nextPageToLoad);
+            call.enqueue(new CallbackLoadMovies());
 
-        HomeGridAdapter adapter = (HomeGridAdapter)moviesRV.getAdapter();
-        adapter.setLoading(true);
+            HomeGridAdapter adapter = (HomeGridAdapter)moviesRV.getAdapter();
+            adapter.setLoading(true);
+        }
+    }
+
+    private void loadFavoriteMovies() {
+
     }
 
     @Override
