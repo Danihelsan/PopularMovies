@@ -14,6 +14,7 @@ android {
         buildConfigField "String", "MOVIES_API_KEY", THEMOVIESDB_API_KEY
         buildConfigField "String", "POSTER_BASE_URL", "\"http://image.tmdb.org/t/p/\""
         buildConfigField "String", "MOVIES_BASE_URL", "\"http://api.themoviedb.org/3/\""
+        buildConfigField "int", "DATABASE_VERSION", "1"
 
     }
     buildTypes {
@@ -55,8 +56,6 @@ dependencies {
     provided  'com.google.dagger:dagger-compiler:2.0.2'
     provided 'org.glassfish:javax.annotation:10.0-b28'
 
-
-    apt 'net.simonvt.schematic:schematic-compiler:0.6.4'
-    compile 'net.simonvt.schematic:schematic-compiler:0.6.4'
-
+    apt 'net.simonvt.schematic:schematic-compiler:0.6.3'
+    compile 'net.simonvt.schematic:schematic:0.6.3'
 }
