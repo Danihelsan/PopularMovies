@@ -33,3 +33,4 @@ gradlew
 
 # Gradle:
 .idea/
+gradle.properties
