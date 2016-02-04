@@ -31,5 +31,9 @@
             android:value="GlideModule" />
     </application>
 
+    <provider
+        android:name="pe.asomapps.popularmovies.model.data.base.generated.AppProvider"
+        android:authorities="pe.asomapps.popularmovies.model.data.base.AppProvider"
+        android:exported="false" />
 
 </manifest>
