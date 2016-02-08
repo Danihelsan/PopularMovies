@@ -5,4 +5,5 @@ package pe.asomapps.popularmovies.ui.interfaces;
  */
 public interface OnLoadMoreListener {
     void onLoadMore();
+    boolean onLoadMoreItemClicked();
 }

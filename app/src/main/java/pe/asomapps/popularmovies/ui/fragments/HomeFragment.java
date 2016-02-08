@@ -17,12 +17,12 @@ import butterknife.Bind;
 import butterknife.ButterKnife;
 import pe.asomapps.popularmovies.DefaultCallback;
 import pe.asomapps.popularmovies.R;
-import pe.asomapps.popularmovies.data.api.MoviesApi;
 import pe.asomapps.popularmovies.model.Movie;
 import pe.asomapps.popularmovies.model.responses.DiscoverMoviesResponse;
 import pe.asomapps.popularmovies.ui.activities.DetailActivity;
 import pe.asomapps.popularmovies.ui.adapters.HomeGridAdapter;
 import pe.asomapps.popularmovies.ui.interfaces.FragmentInteractor;
+import pe.asomapps.popularmovies.ui.interfaces.MovieClickListener;
 import pe.asomapps.popularmovies.ui.interfaces.OnLoadMoreListener;
 import pe.asomapps.popularmovies.ui.utils.Sort;
 import pe.asomapps.popularmovies.ui.utils.Tag;
@@ -33,7 +33,7 @@ import retrofit.Retrofit;
 /**
  * @author Danihelsan
  */
-public class HomeFragment extends BaseFragment implements OnLoadMoreListener, HomeGridAdapter.OnLoadMoreItemClicked, HomeGridAdapter.MovieClickListener{
+public class HomeFragment extends BaseFragment implements OnLoadMoreListener, MovieClickListener {
     public static final Tag tag = Tag.HOME;
 
     private static final String KEY_SORTOPTION = "sort_option";
@@ -85,7 +85,7 @@ public class HomeFragment extends BaseFragment implements OnLoadMoreListener, Ho
         View rootView = inflater.inflate(R.layout.fragment_home,container,false);
         ButterKnife.bind(this,rootView);
 
-        HomeGridAdapter adapter = new HomeGridAdapter(moviesRV, new ArrayList(), this, this, this, interactor);
+        HomeGridAdapter adapter = new HomeGridAdapter(moviesRV, new ArrayList(), this, this, interactor);
         moviesRV.setAdapter(adapter);
         return rootView;
     }
@@ -134,11 +134,6 @@ public class HomeFragment extends BaseFragment implements OnLoadMoreListener, Ho
         }
     }
 
-    @Override
-    public void onLoadMore() {
-        loadMoreMovies();
-    }
-
     private void loadMoreMovies() {
         if (currentSort==null ){
             //FAVORITE MOVIES
@@ -178,6 +173,11 @@ public class HomeFragment extends BaseFragment implements OnLoadMoreListener, Ho
     @Override
     public boolean onAddToFavoritesClicked(Movie movie) {
         return false;
+    }
+
+    @Override
+    public void onLoadMore() {
+        loadMoreMovies();
     }
 
     @Override

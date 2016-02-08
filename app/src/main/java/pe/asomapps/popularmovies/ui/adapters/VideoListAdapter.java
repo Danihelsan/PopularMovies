@@ -53,6 +53,8 @@ public class VideoListAdapter<T> extends RecyclerView.Adapter<ViewHolder> {
 
     private ViewHolder onCreateHeaderViewHolder(ViewGroup parent) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_video_header,parent,false);
+        HeaderHolder holder = new HeaderHolder(view);
+        holder.title.setText(view.getResources().getString(R.string.item_video_header));
         return new HeaderHolder(view);
     }
 
@@ -157,6 +159,10 @@ public class VideoListAdapter<T> extends RecyclerView.Adapter<ViewHolder> {
             this.items.remove(index);
             notifyItemRemoved(index);
         }
+    }
+
+    public List<T> getItems() {
+        return items;
     }
 
     public interface VideoClickListener{

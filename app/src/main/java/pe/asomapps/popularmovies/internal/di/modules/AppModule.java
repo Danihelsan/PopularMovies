@@ -1,10 +1,13 @@
 package pe.asomapps.popularmovies.internal.di.modules;
 
+import android.content.ContentResolver;
+
 import javax.inject.Singleton;
 
 import dagger.Module;
 import dagger.Provides;
 import pe.asomapps.popularmovies.App;
+import pe.asomapps.popularmovies.data.helper.DataBaseHelper;
 
 /**
  * @author Danihelsan
@@ -21,5 +24,17 @@ public class AppModule {
     @Singleton
     App providesApplication() {
         return app;
+    }
+
+    @Provides
+    @Singleton
+    DataBaseHelper providesDbHelper(App app){
+        return new DataBaseHelper(app);
+    }
+
+    @Provides
+    @Singleton
+    ContentResolver providesContentResolver(App app){
+        return app.getContentResolver();
     }
 }

@@ -4,6 +4,7 @@ import javax.inject.Singleton;
 
 import dagger.Component;
 import pe.asomapps.popularmovies.App;
+import pe.asomapps.popularmovies.data.helper.DataBaseHelper;
 import pe.asomapps.popularmovies.internal.di.modules.ApiModule;
 import pe.asomapps.popularmovies.internal.di.modules.AppModule;
 import pe.asomapps.popularmovies.ui.fragments.BaseFragment;
@@ -18,4 +19,5 @@ public interface AppComponent {
     App getApplication();
 
     void inject(BaseFragment fragment);
+    void inject(DataBaseHelper dbHelper);
 }

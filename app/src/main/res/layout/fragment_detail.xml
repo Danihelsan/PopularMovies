@@ -103,17 +103,6 @@
                     android:textSize="15sp"
                     tools:background="@color/cardview_light_background"
                     tools:text="8.1/10" />
-
-                <ImageButton
-                    android:id="@+id/favorite"
-                    android:layout_width="75dp"
-                    android:layout_height="75dp"
-                    android:layout_marginTop="10dp"
-                    android:adjustViewBounds="true"
-                    android:background="@android:color/transparent"
-                    android:padding="5dp"
-                    android:scaleType="centerInside"
-                    android:src="@drawable/favorite_selector" />
             </LinearLayout>
         </LinearLayout>
 
@@ -147,6 +136,16 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@id/separator"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:layout_marginTop="10dp"
+            android:clipToPadding="false" />
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/reviewsRV"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/videosRV"
             android:layout_marginLeft="10dp"
             android:layout_marginRight="10dp"
             android:layout_marginTop="10dp"

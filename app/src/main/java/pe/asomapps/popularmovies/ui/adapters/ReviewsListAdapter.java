@@ -1,80 +1,52 @@
 package pe.asomapps.popularmovies.ui.adapters;
 
 import android.content.Context;
-import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.request.RequestListener;
-import com.github.florent37.glidepalette.GlidePalette;
-
+import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import pe.asomapps.popularmovies.R;
 import pe.asomapps.popularmovies.model.Movie;
-import pe.asomapps.popularmovies.ui.fragments.DetailFragment;
-import pe.asomapps.popularmovies.ui.interfaces.FragmentInteractor;
-import pe.asomapps.popularmovies.ui.interfaces.MovieClickListener;
+import pe.asomapps.popularmovies.model.Review;
 import pe.asomapps.popularmovies.ui.interfaces.OnLoadMoreListener;
 
 /**
  * Created by Danihelsan
  */
-public class HomeGridAdapter<T> extends RecyclerView.Adapter<ViewHolder>{
+public class ReviewsListAdapter<T> extends RecyclerView.Adapter<ViewHolder> {
     private final int VISIBLE_THRESHOLD = 10;
 
-    public static final int ITEM_VIEW_TYPE_ITEM = 0;
-    public static final int ITEM_VIEW_TYPE_FOOTER = 1;
+    public static final int ITEM_VIEW_TYPE_HEADER = 0;
+    public static final int ITEM_VIEW_TYPE_ITEM = 1;
+    public static final int ITEM_VIEW_TYPE_FOOTER = 2;
 
     private List<T> items;
-
-    private MovieClickListener movieClickListener;
     private OnLoadMoreListener onLoadMoreListener;
 
     private int firstVisibleItem, visibleItemCount, totalItemCount, previousTotal = 0;
     private boolean loading = true;
 
-    public HomeGridAdapter(RecyclerView recyclerView, List<T> items, OnLoadMoreListener onLoadMoreListener, MovieClickListener movieClickListener,FragmentInteractor interactor) {
+    public ReviewsListAdapter(RecyclerView recyclerView, ArrayList<T> items, OnLoadMoreListener onLoadMoreListener) {
         this.items = items;
-        this.movieClickListener = movieClickListener;
         this.onLoadMoreListener = onLoadMoreListener;
-        customRecyclerView(recyclerView, interactor);
+        customRecyclerView(recyclerView);
     }
 
-    private void customRecyclerView(final RecyclerView recyclerView,FragmentInteractor interactor) {
+    private void customRecyclerView(final RecyclerView recyclerView) {
         final int numColumns = recyclerView.getContext().getResources().getConfiguration().orientation + 1;
-        final GridLayoutManager recyclerViewManager = new GridLayoutManager(recyclerView.getContext(),numColumns);
-
-        if (interactor!=null && interactor.isTablet() && !interactor.isLandscape()){
-            recyclerViewManager.setOrientation(LinearLayoutManager.HORIZONTAL);
-        } else{
-            recyclerViewManager.setOrientation(LinearLayoutManager.VERTICAL);
-        }
-
-        recyclerViewManager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup(){
-            @Override
-            public int getSpanSize(int position) {
-                switch(recyclerView.getAdapter().getItemViewType(position)){
-                    case ITEM_VIEW_TYPE_ITEM:
-                        return 1;
-                    case ITEM_VIEW_TYPE_FOOTER:
-                        return numColumns;
-                    default: return -1;
-                }
-            }
-        });
+        final CustomLinearLayoutManager recyclerViewManager = new CustomLinearLayoutManager(recyclerView.getContext(), LinearLayoutManager.VERTICAL, false);
+        recyclerView.setLayoutManager(recyclerViewManager);
 
         recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
@@ -108,6 +80,8 @@ public class HomeGridAdapter<T> extends RecyclerView.Adapter<ViewHolder>{
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         switch(viewType){
+            case ITEM_VIEW_TYPE_HEADER:
+                return onCreateHeaderViewHolder(parent);
             case ITEM_VIEW_TYPE_ITEM:
                 return onCreateItemViewHolder(parent);
             case ITEM_VIEW_TYPE_FOOTER:
@@ -117,25 +91,16 @@ public class HomeGridAdapter<T> extends RecyclerView.Adapter<ViewHolder>{
         }
     }
 
-    private ViewHolder onCreateItemViewHolder(final ViewGroup parent) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_grid_home,parent,false);
-        view.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (movieClickListener !=null){
-                    int position = ((RecyclerView)parent).getChildAdapterPosition(v);
-                    Movie movie = (Movie) items.get(position);
+    private ViewHolder onCreateHeaderViewHolder(ViewGroup parent) {
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_video_header,parent,false);
+        HeaderHolder holder = new HeaderHolder(view);
+        holder.title.setText(view.getResources().getString(R.string.item_reviews_header));
+        return new HeaderHolder(view);
+    }
 
-                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
-                        MovieHolder holder = new MovieHolder(v);
-                        movieClickListener.onMovieClicked(movie, holder.poster, holder.favorite);
-                    } else{
-                        movieClickListener.onMovieClicked(movie);
-                    }
-                }
-            }
-        });
-        return new MovieHolder(view);
+    private ViewHolder onCreateItemViewHolder(final ViewGroup parent) {
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_list_review,parent,false);
+        return new ReviewHolder(view);
     }
 
     private ViewHolder onCreateFooterViewHolder(ViewGroup parent) {
@@ -154,6 +119,8 @@ public class HomeGridAdapter<T> extends RecyclerView.Adapter<ViewHolder>{
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
         switch(getItemViewType(position)){
+            case ITEM_VIEW_TYPE_HEADER:
+                onBindHeaderViewHolder(holder,position); break;
             case ITEM_VIEW_TYPE_ITEM:
                 onBindItemViewHolder(holder,position); break;
             case ITEM_VIEW_TYPE_FOOTER:
@@ -161,17 +128,20 @@ public class HomeGridAdapter<T> extends RecyclerView.Adapter<ViewHolder>{
         }
     }
 
+    private void onBindHeaderViewHolder(ViewHolder holder, int position) {
+        if (items.size()==0){
+            ((HeaderHolder) holder).rootView.setVisibility(View.GONE);
+        } else{
+            ((HeaderHolder) holder).rootView.setVisibility(View.VISIBLE);
+        }
+    }
+
     private void onBindItemViewHolder(ViewHolder holder, int position) {
-        Movie movie = (Movie) items.get(position);
-        if (movie!=null){
-            MovieHolder itemHolder = (MovieHolder) holder;
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                itemHolder.poster.setTransitionName(DetailFragment.KEY_POSTER + movie.getId());
-                itemHolder.favorite.setTransitionName(DetailFragment.KEY_FAVORITE + movie.getId());
-            }
-            String imageUrl = movie.getPosterPath();
-            RequestListener listener = GlidePalette.with(imageUrl).use(GlidePalette.Profile.VIBRANT).intoBackground(itemHolder.rootView);
-            Glide.with(holder.itemView.getContext()).load(imageUrl).listener(listener).into(itemHolder.poster);
+        Review item = (Review) items.get(position);
+        if (item!=null){
+            ReviewHolder itemHolder = (ReviewHolder) holder;
+            itemHolder.name.setText(item.getAuthor());
+            itemHolder.review.setText(item.getContent());
         }
     }
 
@@ -183,7 +153,6 @@ public class HomeGridAdapter<T> extends RecyclerView.Adapter<ViewHolder>{
         } else {
             Context context = footerHolder.rootView.getContext();
             footerHolder.text.setText(context.getString(R.string.footer_loading_movies));
-
         }
     }
 
@@ -194,33 +163,30 @@ public class HomeGridAdapter<T> extends RecyclerView.Adapter<ViewHolder>{
 
     @Override
     public int getItemViewType(int position) {
-        if (items.get(position)!=null) {
+        if (position == 0){
+            return ITEM_VIEW_TYPE_HEADER;
+        } else if (position!=0 && items.get(position)!=null){
             return ITEM_VIEW_TYPE_ITEM;
         } else {
             return ITEM_VIEW_TYPE_FOOTER;
         }
     }
-
-    public void enableLoadingMore() {
-        loading = false;
-        if (items.size() == 0){
-            addItem(null);
-            notifyItemInserted(1);
-        } else{
-            notifyItemChanged(items.size());
+    static class HeaderHolder extends ViewHolder {
+        @Nullable
+        @Bind(R.id.rootView) View rootView;
+        @Nullable @Bind(R.id.title) TextView title;
+        public HeaderHolder(View view) {
+            super(view);
+            ButterKnife.bind(this,view);
         }
     }
 
-    public void setLoading(boolean loading) {
-        this.loading = loading;
-        notifyItemChanged(items.size());
-    }
-
-    static class MovieHolder extends RecyclerView.ViewHolder {
+    static class ReviewHolder extends ViewHolder {
         @Nullable @Bind(R.id.rootView) View rootView;
-        @Nullable @Bind(R.id.poster) ImageView poster;
-        @Nullable @Bind(R.id.favorite) ImageView favorite;
-        public MovieHolder(View view) {
+        @Nullable @Bind(R.id.name) TextView name;
+        @Nullable @Bind(R.id.review) TextView review;
+
+        public ReviewHolder(View view) {
             super(view);
             ButterKnife.bind(this,view);
         }
@@ -236,12 +202,6 @@ public class HomeGridAdapter<T> extends RecyclerView.Adapter<ViewHolder>{
     }
 
     public void resetItems(@NonNull List<T> items) {
-        loading = true;
-        firstVisibleItem = 0;
-        visibleItemCount = 0;
-        totalItemCount = 0;
-        previousTotal = 0;
-
         items.clear();
         addItems(items);
     }
@@ -258,7 +218,7 @@ public class HomeGridAdapter<T> extends RecyclerView.Adapter<ViewHolder>{
         }
     }
 
-    public void removeItem(T item) {
+    public void removeItem(Movie item) {
         int index = items.indexOf(item);
         if (index != -1) {
             this.items.remove(index);
@@ -266,7 +226,8 @@ public class HomeGridAdapter<T> extends RecyclerView.Adapter<ViewHolder>{
         }
     }
 
-    public List<T> getItems() {
+    public List getItems() {
         return items;
     }
+
 }

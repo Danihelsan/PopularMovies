@@ -29,11 +29,11 @@
         <meta-data
             android:name="pe.asomapps.popularmovies.data.glide.MovieGlideSetup"
             android:value="GlideModule" />
-    </application>
 
-    <provider
-        android:name="pe.asomapps.popularmovies.model.data.base.generated.AppProvider"
-        android:authorities="pe.asomapps.popularmovies.model.data.base.AppProvider"
-        android:exported="false" />
+        <provider
+            android:name="pe.asomapps.popularmovies.model.data.generated.AppProvider"
+            android:authorities="pe.asomapps.popularmovies.model.data.AppProvider"
+            android:exported="false" />
+    </application>
 
 </manifest>

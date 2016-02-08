@@ -1,16 +1,40 @@
 package pe.asomapps.popularmovies.model;
 
+import android.content.ContentValues;
+import android.os.Parcel;
+import android.os.Parcelable;
+
+import pe.asomapps.popularmovies.model.data.VideoColumns;
+
 /**
  * Created by Danihelsan
  */
-public class Video {
+public class Video implements Parcelable{
     private String id;
-    private String iso_639_1;
     private String key;
     private String name;
     private String site;
-    private String size;
-    private String type;
+
+    public Video(){}
+
+    protected Video(Parcel in) {
+        id = in.readString();
+        key = in.readString();
+        name = in.readString();
+        site = in.readString();
+    }
+
+    public static final Creator<Video> CREATOR = new Creator<Video>() {
+        @Override
+        public Video createFromParcel(Parcel in) {
+            return new Video(in);
+        }
+
+        @Override
+        public Video[] newArray(int size) {
+            return new Video[size];
+        }
+    };
 
     public String getId() {
         return id;
@@ -18,14 +42,6 @@ public class Video {
 
     public void setId(String id) {
         this.id = id;
-    }
-
-    public String getIso_639_1() {
-        return iso_639_1;
-    }
-
-    public void setIso_639_1(String iso_639_1) {
-        this.iso_639_1 = iso_639_1;
     }
 
     public String getKey() {
@@ -52,19 +68,39 @@ public class Video {
         this.site = site;
     }
 
-    public String getSize() {
-        return size;
+
+    @Override
+    public int describeContents() {
+        return 0;
     }
 
-    public void setSize(String size) {
-        this.size = size;
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(id);
+        dest.writeString(key);
+        dest.writeString(name);
+        dest.writeString(site);
     }
 
-    public String getType() {
-        return type;
+    public static ContentValues getContentValue(Video video, long movieId) {
+        ContentValues videoVContentValues = new ContentValues();
+        videoVContentValues.put(VideoColumns.VIDEO_ID, video.getId());
+        videoVContentValues.put(VideoColumns.MOVIE_ID, movieId);
+        videoVContentValues.put(VideoColumns.NAME, video.getName());
+        videoVContentValues.put(VideoColumns.SITE, video.getSite());
+        videoVContentValues.put(VideoColumns.KEY, video.getKey());
+
+        return videoVContentValues;
     }
 
-    public void setType(String type) {
-        this.type = type;
+    public String getVideoPath() {
+        if (site != null && key != null) {
+            String url = site;
+            if (site.equalsIgnoreCase("youtube")) {
+                url = String.format("https://www.youtube.com/watch?v=%s", key);
+            }
+            return url;
+        }
+        return null;
     }
 }

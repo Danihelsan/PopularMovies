@@ -1,10 +1,13 @@
 package pe.asomapps.popularmovies.model;
 
+import android.content.ContentValues;
 import android.os.Parcel;
 import android.os.Parcelable;
 
 import com.google.gson.annotations.SerializedName;
 
+import pe.asomapps.popularmovies.model.data.MovieColumns;
+import pe.asomapps.popularmovies.model.responses.ReviewsResponse;
 import pe.asomapps.popularmovies.model.responses.VideosResponse;
 
 /**
@@ -13,30 +16,27 @@ import pe.asomapps.popularmovies.model.responses.VideosResponse;
 public class Movie implements Parcelable {
     @SerializedName("poster_path")
     private String posterPath;
-    private boolean adult;
     private String overview;
     @SerializedName("release_date")
     private String releaseDate;
     private int runtime;
-    @SerializedName("genre_ids")
-    private int[] genreIds;
-    private int budget;
     private Genre[] genres;
     private int id;
     @SerializedName("original_title")
     private String originalTitle;
-    @SerializedName("original_language")
-    private String originalLanguage;
     private String title;
     @SerializedName("backdrop_path")
     private String backdropPath;
     private float popularity;
     @SerializedName("vote_count")
     private int voteCount;
-    private boolean video;
     @SerializedName("vote_average")
     private float voteAverage;
+    private boolean favorited = false;
     private VideosResponse videos;
+    private ReviewsResponse reviews;
+
+    public Movie(){}
 
     public String getPosterPath() {
         return posterPath;
@@ -44,14 +44,6 @@ public class Movie implements Parcelable {
 
     public void setPosterPath(String posterPath) {
         this.posterPath = posterPath;
-    }
-
-    public boolean isAdult() {
-        return adult;
-    }
-
-    public void setAdult(boolean adult) {
-        this.adult = adult;
     }
 
     public String getOverview() {
@@ -78,22 +70,6 @@ public class Movie implements Parcelable {
         this.runtime = runtime;
     }
 
-    public int[] getGenreIds() {
-        return genreIds;
-    }
-
-    public void setGenreIds(int[] genreIds) {
-        this.genreIds = genreIds;
-    }
-
-    public int getBudget() {
-        return budget;
-    }
-
-    public void setBudget(int budget) {
-        this.budget = budget;
-    }
-
     public Genre[] getGenres() {
         return genres;
     }
@@ -118,13 +94,6 @@ public class Movie implements Parcelable {
         this.originalTitle = originalTitle;
     }
 
-    public String getOriginalLanguage() {
-        return originalLanguage;
-    }
-
-    public void setOriginalLanguage(String originalLanguage) {
-        this.originalLanguage = originalLanguage;
-    }
 
     public String getTitle() {
         return title;
@@ -158,14 +127,6 @@ public class Movie implements Parcelable {
         this.voteCount = voteCount;
     }
 
-    public boolean isVideo() {
-        return video;
-    }
-
-    public void setVideo(boolean video) {
-        this.video = video;
-    }
-
     public float getVoteAverage() {
         return voteAverage;
     }
@@ -182,43 +143,51 @@ public class Movie implements Parcelable {
         this.videos = videos;
     }
 
+    public ReviewsResponse getReviews() {
+        return reviews;
+    }
+
+    public void setReviews(ReviewsResponse reviews) {
+        this.reviews = reviews;
+    }
+
+    public boolean isFavorited() {
+        return favorited;
+    }
+
+    public void setFavorited(boolean favorited) {
+        this.favorited = favorited;
+    }
+
     protected Movie(Parcel in) {
         posterPath = in.readString();
-        adult = in.readByte() != 0;
         overview = in.readString();
         releaseDate = in.readString();
         runtime = in.readInt();
-        genreIds = in.createIntArray();
-        budget = in.readInt();
         id = in.readInt();
         originalTitle = in.readString();
-        originalLanguage = in.readString();
         title = in.readString();
         backdropPath = in.readString();
         popularity = in.readFloat();
         voteCount = in.readInt();
-        video = in.readByte() != 0;
         voteAverage = in.readFloat();
+        favorited = in.readByte() != 0;
     }
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(posterPath);
-        dest.writeByte((byte) (adult ? 1 : 0));
         dest.writeString(overview);
         dest.writeString(releaseDate);
         dest.writeInt(runtime);
-        dest.writeIntArray(genreIds);
-        dest.writeInt(budget);
         dest.writeInt(id);
         dest.writeString(originalTitle);
-        dest.writeString(originalLanguage);
         dest.writeString(title);
         dest.writeString(backdropPath);
         dest.writeFloat(popularity);
         dest.writeInt(voteCount);
-        dest.writeByte((byte) (video ? 1 : 0));
         dest.writeFloat(voteAverage);
+        dest.writeByte((byte) (favorited ? 1 : 0));
     }
 
     @Override
@@ -237,4 +206,21 @@ public class Movie implements Parcelable {
             return new Movie[size];
         }
     };
+
+    public static ContentValues getContentValue(Movie movie) {
+        ContentValues movieContentValues = new ContentValues();
+        movieContentValues.put(MovieColumns._ID, movie.getId());
+        movieContentValues.put(MovieColumns.OVERVIEW, movie.getOverview());
+        movieContentValues.put(MovieColumns.RELEASE_DATE, movie.getReleaseDate());
+        movieContentValues.put(MovieColumns.RUNTIME, movie.getRuntime());
+        movieContentValues.put(MovieColumns.POSTER_PATH, movie.getPosterPath());
+        movieContentValues.put(MovieColumns.BACK_DROP_PATH, movie.getBackdropPath());
+        movieContentValues.put(MovieColumns.POPULARITY, movie.getPopularity());
+        movieContentValues.put(MovieColumns.TITLE, movie.getTitle());
+        movieContentValues.put(MovieColumns.VOTE_AVERAGE, movie.getVoteAverage());
+        movieContentValues.put(MovieColumns.VOTE_COUNT, movie.getVoteCount());
+        movieContentValues.put(MovieColumns.ORIGINAL_TITLE, movie.getOriginalTitle());
+        movieContentValues.put(MovieColumns.FAVORITED, movie.isFavorited() ? 1 : 0);
+        return movieContentValues;
+    }
 }

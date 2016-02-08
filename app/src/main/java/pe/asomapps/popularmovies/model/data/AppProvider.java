@@ -1,4 +1,4 @@
-package pe.asomapps.popularmovies.model.data.base;
+package pe.asomapps.popularmovies.model.data;
 
 import android.net.Uri;
 
@@ -6,10 +6,6 @@ import net.simonvt.schematic.annotation.ContentProvider;
 import net.simonvt.schematic.annotation.ContentUri;
 import net.simonvt.schematic.annotation.InexactContentUri;
 import net.simonvt.schematic.annotation.TableEndpoint;
-
-import pe.asomapps.popularmovies.model.data.MovieColumns;
-import pe.asomapps.popularmovies.model.data.ReviewColumns;
-import pe.asomapps.popularmovies.model.data.VideoColumns;
 
 /**
  * Created by Danihelsan
@@ -40,7 +36,7 @@ public class AppProvider {
         @ContentUri(
                 path = Path.MOVIES,
                 type = "vnd.android.cursor.dir/movie",
-                defaultSort = MovieColumns.ADDED_DATE + " ASC")
+                defaultSort = MovieColumns.VOTE_AVERAGE + " DESC")
         public static final Uri MOVIES_URI = buildUri(Path.MOVIES);
 
         @InexactContentUri(

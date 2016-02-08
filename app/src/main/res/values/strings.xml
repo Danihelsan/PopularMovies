@@ -7,6 +7,7 @@
     <string name="detail_runtime">%1$dmin</string>
     <string name="detail_rating">%1$s/10</string>
     <string name="item_video_header">Trailers:</string>
+    <string name="item_reviews_header">Reviews:</string>
     <string name="information_loading">Loading</string>
     <string name="information_unavailable">Unavailable</string>
 
@@ -14,5 +15,6 @@
     <string name="sort_label_popularity">Most Popularity</string>
     <string name="sort_label_revenue">Most Revenue</string>
     <string name="sort_label_vote">Most Voted</string>
+    <string name="share">Share</string>
 
 </resources>

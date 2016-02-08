@@ -1,12 +1,9 @@
-package pe.asomapps.popularmovies.model.data.base;
+package pe.asomapps.popularmovies.model.data;
 
 import net.simonvt.schematic.annotation.Database;
 import net.simonvt.schematic.annotation.Table;
 
 import pe.asomapps.popularmovies.BuildConfig;
-import pe.asomapps.popularmovies.model.data.MovieColumns;
-import pe.asomapps.popularmovies.model.data.ReviewColumns;
-import pe.asomapps.popularmovies.model.data.VideoColumns;
 
 /**
  * Created by Danihelsan

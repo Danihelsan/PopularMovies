@@ -14,6 +14,7 @@ import javax.inject.Inject;
 
 import pe.asomapps.popularmovies.App;
 import pe.asomapps.popularmovies.data.api.MoviesApi;
+import pe.asomapps.popularmovies.data.helper.DataBaseHelper;
 
 /**
  * @author Danihelsan
@@ -22,6 +23,9 @@ public class BaseFragment extends Fragment {
 
     @Inject
     MoviesApi apiService;
+
+    @Inject
+    DataBaseHelper dbHelper;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
