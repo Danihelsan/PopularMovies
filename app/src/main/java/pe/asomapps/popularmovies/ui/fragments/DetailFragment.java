@@ -2,6 +2,7 @@ package pe.asomapps.popularmovies.ui.fragments;
 
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
+import android.content.res.ColorStateList;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -125,8 +126,11 @@ public class DetailFragment extends BaseFragment implements VideoListAdapter.Vid
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View rootView;
-        setHasOptionsMenu(true);
-        favoriteAction = (FloatingActionButton) getActivity().findViewById(R.id.favorite);
+        if (!interactor.isTablet()){
+            setHasOptionsMenu(true);
+            favoriteAction = (FloatingActionButton) getActivity().findViewById(R.id.favorite);
+        }
+
         if (movie!=null){
             rootView = inflater.inflate(R.layout.fragment_detail,container,false);
             ButterKnife.bind(this,rootView);
@@ -138,16 +142,19 @@ public class DetailFragment extends BaseFragment implements VideoListAdapter.Vid
             reviewsRV.setAdapter(adapterReviews);
             reviewsRV.setNestedScrollingEnabled(false);
 
-            favoriteAction.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    favoriteAction(view);
-                }
+            if (!interactor.isTablet()){
+                favoriteAction.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        favoriteAction(view);
+                    }
             });
+            }
         } else{
             rootView = inflater.inflate(R.layout.content_empty,container,false);
-
-            favoriteAction.setVisibility(View.GONE);
+            if (!interactor.isTablet()){
+                favoriteAction.setVisibility(View.GONE);
+            }
         }
         return rootView;
     }
@@ -155,14 +162,18 @@ public class DetailFragment extends BaseFragment implements VideoListAdapter.Vid
     private void favoriteAction(View view) {
         if (!dbHelper.isMovieFavorited(movie.getId())) {
             if (dbHelper.insertMovieToFavorites(movie) > 0) {
-                favoriteAction.setBackgroundColor(getResources().getColor(R.color.primary_color_unselector));
+                if (!interactor.isTablet()){
+                    favoriteAction.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.primary_color_unselector)));
+                }
                 movie.setFavorited(true);
                 //TODO INSERT REVIEWS IN MOVIE ENTITY
                 //TODO INSERT IN DB
             }
         } else {
             if (dbHelper.deleteMovieFavorited(movie.getId()) > 0) {
-                favoriteAction.setBackgroundColor(getResources().getColor(R.color.primary_color_selector));
+                if (!interactor.isTablet()){
+                    favoriteAction.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.primary_color_selector)));
+                }
                 movie.setFavorited(false);
                 //TODO DELETE FROM DB
             }
@@ -178,7 +189,9 @@ public class DetailFragment extends BaseFragment implements VideoListAdapter.Vid
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
 
             poster.setTransitionName(KEY_POSTER + movie.getId());
-            favoriteAction.setTransitionName(KEY_FAVORITE + movie.getId());
+            if (!interactor.isTablet()){
+                favoriteAction.setTransitionName(KEY_FAVORITE + movie.getId());
+            }
         }
 
         title.setText(movie.getTitle());
@@ -194,6 +207,8 @@ public class DetailFragment extends BaseFragment implements VideoListAdapter.Vid
             .intoBackground(description);
         Glide.with(getContext()).load(movie.getPosterPath())
                 .listener(listener)
+                .placeholder(R.drawable.empty_movies)
+                .dontAnimate()
                 .into(poster);
 
         boolean shouldLoadDetail = false;
@@ -220,10 +235,12 @@ public class DetailFragment extends BaseFragment implements VideoListAdapter.Vid
             loadMovieDetail();
         }
 
-        if (dbHelper.isMovieFavorited(movie.getId())) {
-            favoriteAction.setBackgroundColor(getResources().getColor(R.color.primary_color_unselector));
-        } else {
-            favoriteAction.setBackgroundColor(getResources().getColor(R.color.primary_color_selector));
+        if (!interactor.isTablet()){
+            if (dbHelper.isMovieFavorited(movie.getId())) {
+                favoriteAction.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.primary_color_unselector)));
+            } else {
+                favoriteAction.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.primary_color_selector)));
+            }
         }
     }
 
@@ -270,6 +287,14 @@ public class DetailFragment extends BaseFragment implements VideoListAdapter.Vid
     @Override
     public boolean onLoadMoreItemClicked() {
         return false;
+    }
+
+    public void updateFavorited(Movie movie) {
+        if (this.movie.getId() ==movie.getId()){
+            if (movie.isFavorited()){
+
+            }
+        }
     }
 
     private class CallbackLoadMovieDetail extends DefaultCallback<MovieResponse> {

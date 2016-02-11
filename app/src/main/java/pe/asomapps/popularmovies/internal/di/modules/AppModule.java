@@ -8,6 +8,7 @@ import dagger.Module;
 import dagger.Provides;
 import pe.asomapps.popularmovies.App;
 import pe.asomapps.popularmovies.data.helper.DataBaseHelper;
+import pe.asomapps.popularmovies.data.helper.PreferencesHelper;
 
 /**
  * @author Danihelsan
@@ -36,5 +37,11 @@ public class AppModule {
     @Singleton
     ContentResolver providesContentResolver(App app){
         return app.getContentResolver();
+    }
+
+    @Provides
+    @Singleton
+    PreferencesHelper providesPreferencesHelper(App app){
+        return new PreferencesHelper(app);
     }
 }

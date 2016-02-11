@@ -9,6 +9,7 @@ import android.widget.TextView;
 import java.util.List;
 
 import pe.asomapps.popularmovies.R;
+import pe.asomapps.popularmovies.ui.utils.SortOptionItem;
 
 /**
  * @author Danihelsan
@@ -17,9 +18,9 @@ public class SortOptionsAdapter extends BaseAdapter{
     private final int resLayoutId = R.layout.item_sortoptions_spinner;
     private final int resLayoutDropdownId = R.layout.item_sortoptions_dropdown_spinner;
 
-    private List<? extends Sortable> items;
+    private List<Sortable> items;
 
-    public SortOptionsAdapter(List<? extends Sortable> items){
+    public SortOptionsAdapter(List<Sortable> items){
         this.items = items;
     }
     @Override
@@ -63,10 +64,32 @@ public class SortOptionsAdapter extends BaseAdapter{
         return getItem(position);
     }
 
+    public void updateFavoriteItem(boolean withFavorited, String optionName) {
+        boolean favoriteFound = false;
+
+        for (Sortable item : items){
+            if (item.getValue()==null){
+                favoriteFound = true;
+                if (!withFavorited){
+                    items.remove(item);
+                }
+                notifyDataSetChanged();
+                break;
+            }
+        }
+
+        if (!favoriteFound && withFavorited){
+            items.add(new SortOptionItem(optionName, null));
+            notifyDataSetChanged();
+        }
+    }
+
     public interface Sortable {
         long getItemId();
         CharSequence getLabel();
         Object getValue();
+        boolean getVisible();
+        void setVisibility(boolean visible);
     }
 
 }

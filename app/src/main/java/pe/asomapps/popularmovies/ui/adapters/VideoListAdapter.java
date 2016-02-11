@@ -52,7 +52,7 @@ public class VideoListAdapter<T> extends RecyclerView.Adapter<ViewHolder> {
     }
 
     private ViewHolder onCreateHeaderViewHolder(ViewGroup parent) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_video_header,parent,false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_recycler_header,parent,false);
         HeaderHolder holder = new HeaderHolder(view);
         holder.title.setText(view.getResources().getString(R.string.item_video_header));
         return new HeaderHolder(view);

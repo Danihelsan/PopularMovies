@@ -135,7 +135,18 @@ public class HomeGridAdapter<T> extends RecyclerView.Adapter<ViewHolder>{
                 }
             }
         });
-        return new MovieHolder(view);
+
+        MovieHolder holder = new MovieHolder(view);
+
+        holder.favorite.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                int position = (Integer) view.getTag();
+                Movie movie = (Movie) items.get(position);
+                movieClickListener.onFavoritedClicked(position, movie);
+            }
+        });
+        return holder;
     }
 
     private ViewHolder onCreateFooterViewHolder(ViewGroup parent) {
@@ -171,7 +182,14 @@ public class HomeGridAdapter<T> extends RecyclerView.Adapter<ViewHolder>{
             }
             String imageUrl = movie.getPosterPath();
             RequestListener listener = GlidePalette.with(imageUrl).use(GlidePalette.Profile.VIBRANT).intoBackground(itemHolder.rootView);
-            Glide.with(holder.itemView.getContext()).load(imageUrl).listener(listener).into(itemHolder.poster);
+            Glide.with(holder.itemView.getContext()).load(imageUrl).listener(listener).placeholder(R.drawable.empty_movies).dontAnimate().into(itemHolder.poster);
+
+            itemHolder.favorite.setTag(position);
+            if (movie.isFavorited()){
+                itemHolder.favorite.setBackgroundResource(R.drawable.favorite_unselector);
+            } else {
+                itemHolder.favorite.setBackgroundResource(R.drawable.favorite_selector);
+            }
         }
     }
 

@@ -52,7 +52,9 @@ public class HomeFragment extends BaseFragment implements OnLoadMoreListener, Mo
 
     public static HomeFragment newInstance(String sortOption) {
         Bundle bundle = new Bundle();
-        bundle.putString(KEY_SORTOPTION,sortOption);
+        if (sortOption!=null) {
+            bundle.putString(KEY_SORTOPTION, sortOption);
+        }
         HomeFragment fragment = new HomeFragment();
         fragment.setArguments(bundle);
         return fragment;
@@ -118,6 +120,7 @@ public class HomeFragment extends BaseFragment implements OnLoadMoreListener, Mo
     private class CallbackLoadMovies extends DefaultCallback<DiscoverMoviesResponse> {
         @Override
         public void onResponse(Response<DiscoverMoviesResponse> response, Retrofit retrofit) {
+            updateFavorites(response.body().getResults());
             nextPageToLoad = response.body().getPage()+1;
             if (moviesRV.getAdapter() instanceof HomeGridAdapter){
                 HomeGridAdapter adapter = (HomeGridAdapter)moviesRV.getAdapter();
@@ -134,11 +137,17 @@ public class HomeFragment extends BaseFragment implements OnLoadMoreListener, Mo
         }
     }
 
+    private void updateFavorites(List<Movie> results) {
+        for (Movie result: results){
+            if (dbHelper.isMovieFavorited(result.getId())){
+                result.setFavorited(true);
+            }
+        }
+    }
+
     private void loadMoreMovies() {
         if (currentSort==null ){
-            //FAVORITE MOVIES
             if (items.size()==0){
-                //ONLY SHOULD ACCESS HERE THE FIRST TIME
                 loadFavoriteMovies();
             }
         } else {
@@ -152,7 +161,12 @@ public class HomeFragment extends BaseFragment implements OnLoadMoreListener, Mo
     }
 
     private void loadFavoriteMovies() {
-
+        if (moviesRV.getAdapter() instanceof HomeGridAdapter){
+            List<Movie> movies = dbHelper.getFavoritedMovies();
+            HomeGridAdapter adapter = (HomeGridAdapter)moviesRV.getAdapter();
+            adapter.removeItem(null);
+            adapter.addItems(movies);
+        }
     }
 
     @Override
@@ -171,7 +185,25 @@ public class HomeFragment extends BaseFragment implements OnLoadMoreListener, Mo
     }
 
     @Override
-    public boolean onAddToFavoritesClicked(Movie movie) {
+    public boolean onFavoritedClicked(int position, Movie movie) {
+        boolean dbUpdated = false;
+        if (!dbHelper.isMovieFavorited(movie.getId())) {
+            movie.setFavorited(true);
+            if (dbHelper.insertMovieToFavorites(movie) > 0) {
+                dbUpdated = true;
+            }
+        } else if (dbHelper.deleteMovieFavorited(movie.getId()) > 0) {
+            movie.setFavorited(false);
+            dbUpdated = true;
+        }
+
+        if (dbUpdated){
+            interactor.updateSpinner();
+            if (!interactor.isTablet()){
+                interactor.updateFavorited(movie);
+            }
+            moviesRV.getAdapter().notifyItemChanged(position);
+        }
         return false;
     }
 

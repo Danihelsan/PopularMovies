@@ -12,6 +12,6 @@
         android:layout_alignParentLeft="true"
         android:padding="10dp"
         android:text="@string/item_video_header"
-        android:textColor="@color/colorPrimaryText"
+        android:textColor="@color/colorPrimary"
         android:textSize="30sp"/>
 </RelativeLayout>

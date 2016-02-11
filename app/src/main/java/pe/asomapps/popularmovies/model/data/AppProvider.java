@@ -13,10 +13,11 @@ import net.simonvt.schematic.annotation.TableEndpoint;
 @ContentProvider(authority = AppProvider.AUTHORITY, database = AppDataBase.class)
 public class AppProvider {
 
-    public static final String AUTHORITY = "pe.asomapps.popularmovies.data.base.AppProvider";
+    public static final String AUTHORITY = "pe.asomapps.popularmovies.model.data.AppProvider";
     static final Uri BASE_CONTENT_URI = Uri.parse("content://" + AUTHORITY);
 
     interface Path {
+        String FAVORITED = "favorited";
         String MOVIES = "movies";
         String REVIEWS = "reviews";
         String VIDEOS = "videos";
@@ -48,6 +49,13 @@ public class AppProvider {
         public static Uri withId(long id) {
             return buildUri(Path.MOVIES, String.valueOf(id));
         }
+
+        @ContentUri(
+                path = Path.FAVORITED,
+                type = "vnd.android.cursor.dir/favorited",
+                where = MovieColumns.FAVORITED + " = 1",
+                defaultSort = MovieColumns.RELEASE_DATE + " DESC")
+        public static final Uri favorited = buildUri(Path.FAVORITED);
     }
 
     @TableEndpoint(table = AppDataBase.REVIEWS)

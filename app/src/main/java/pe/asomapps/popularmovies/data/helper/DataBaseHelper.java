@@ -108,10 +108,10 @@ public class DataBaseHelper {
     public long insertMovieToFavorites(Movie movie) {
         long movieId = insertMovieToFavorites(Movie.getContentValue(movie));
 
-        if (!movie.getReviews().getResults().isEmpty()) {
+        if (movie.getReviews()!=null && !movie.getReviews().getResults().isEmpty()) {
             insertReviews(movie);
         }
-        if (!movie.getVideos().getResults().isEmpty()) {
+        if (movie.getVideos()!=null && !movie.getVideos().getResults().isEmpty()) {
             insertVideos(movie);
         }
         return movieId;
@@ -147,8 +147,21 @@ public class DataBaseHelper {
 
     public boolean isMovieFavorited(long movieId) {
         Cursor cursor = resolver.query(AppProvider.MOVIES.withId(movieId),null,null,null,null);
-        List<Movie> movies = getMoviesFromCursor(cursor);
-        if (movies.size()==1 && movies.get(0).isFavorited()){
+        if (cursor.getCount()==1){
+            cursor.moveToNext();
+            return cursor.getInt(cursor.getColumnIndex(MovieColumns.FAVORITED)) > 0;
+        }
+        return false;
+    }
+
+    public List<Movie> getFavoritedMovies() {
+        Cursor cursor = resolver.query(AppProvider.MOVIES.favorited,null,null,null,null);
+        return getMoviesFromCursor(cursor);
+    }
+
+    public boolean isMovieFavorited() {
+        Cursor cursor = resolver.query(AppProvider.MOVIES.favorited,null,null,null,null);
+        if (cursor.getCount()>0){
             return true;
         }
         return false;

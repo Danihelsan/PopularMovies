@@ -1,11 +1,10 @@
 package pe.asomapps.popularmovies.ui.activities;
 
-import android.content.res.Configuration;
+import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.transition.Transition;
 import android.transition.TransitionInflater;
@@ -17,33 +16,50 @@ import android.widget.Spinner;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.inject.Inject;
+
+import pe.asomapps.popularmovies.App;
 import pe.asomapps.popularmovies.R;
+import pe.asomapps.popularmovies.data.helper.DataBaseHelper;
+import pe.asomapps.popularmovies.data.helper.PreferencesHelper;
+import pe.asomapps.popularmovies.model.Movie;
 import pe.asomapps.popularmovies.ui.adapters.SortOptionsAdapter;
 import pe.asomapps.popularmovies.ui.fragments.DetailFragment;
 import pe.asomapps.popularmovies.ui.fragments.HomeFragment;
-import pe.asomapps.popularmovies.ui.interfaces.FragmentInteractor;
 import pe.asomapps.popularmovies.ui.utils.Sort;
 import pe.asomapps.popularmovies.ui.utils.SortOptionItem;
 
-public class HomeActivity extends AppCompatActivity implements FragmentInteractor{
-    private final String SAVE_SORTOPTION = "sort_option";;
+public class HomeActivity extends BaseActivity {
+    private final String SAVE_SORTOPTION = "sort_option";
     Fragment homeFragment, detailFragment;
     FrameLayout homeContainer,detailContainer;
-
+    private Spinner spinner;
     private Sort currentSort;
-    private int sortSelected;
+
+    @Inject
+    PreferencesHelper preferencesHelper;
+
+    @Inject
+    DataBaseHelper dbHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        ((App)getApplication()).getComponent().inject(this);
+        installShortcut();
+
         setContentView(R.layout.activity_home);
 
         homeContainer = (FrameLayout)findViewById(R.id.homeContainer);
         detailContainer = (FrameLayout)findViewById(R.id.detailContainer);
 
         currentSort = Sort.POPULARITY;
-        if (savedInstanceState!=null && savedInstanceState.containsKey(SAVE_SORTOPTION)){
-            currentSort = Sort.fromString(savedInstanceState.getString(SAVE_SORTOPTION));
+        if (savedInstanceState!=null && savedInstanceState.containsKey(SAVE_SORTOPTION) ){
+            if (savedInstanceState.getString(SAVE_SORTOPTION)!=null){
+                currentSort = Sort.fromString(savedInstanceState.getString(SAVE_SORTOPTION));
+            } else{
+                currentSort = null;
+            }
         }
 
         String homeTag = HomeFragment.tag.name();
@@ -70,7 +86,8 @@ public class HomeActivity extends AppCompatActivity implements FragmentInteracto
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
-        outState.putString(SAVE_SORTOPTION,currentSort.toString());
+        String sortOption = currentSort!=null?currentSort.toString():null;
+        outState.putString(SAVE_SORTOPTION,sortOption);
         super.onSaveInstanceState(outState);
     }
 
@@ -78,16 +95,17 @@ public class HomeActivity extends AppCompatActivity implements FragmentInteracto
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+
         List<SortOptionsAdapter.Sortable> items = new ArrayList<>();
-        if (userSavedFavorites()) {
-            items.add(new SortOptionItem(getString(R.string.sort_label_favorites), null));
-        }
         items.add(new SortOptionItem(getString(R.string.sort_label_popularity), Sort.POPULARITY));
         items.add(new SortOptionItem(getString(R.string.sort_label_revenue), Sort.REVENUE));
         items.add(new SortOptionItem(getString(R.string.sort_label_vote), Sort.VOTE));
+        if (userSavedFavorites()) {
+            items.add(new SortOptionItem(getString(R.string.sort_label_favorites), null, false));
+        }
 
         SortOptionsAdapter adapter = new SortOptionsAdapter(items);
-        Spinner spinner = (Spinner) toolbar.findViewById(R.id.sort_spinner);
+        spinner = (Spinner) toolbar.findViewById(R.id.sort_spinner);
         spinner.setAdapter(adapter);
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -107,7 +125,7 @@ public class HomeActivity extends AppCompatActivity implements FragmentInteracto
     }
 
     private boolean userSavedFavorites() {
-        return false;
+        return dbHelper.isMovieFavorited();
     }
 
     private void onOptionSelected(Object optionSelected){
@@ -115,7 +133,8 @@ public class HomeActivity extends AppCompatActivity implements FragmentInteracto
             Sort sort = ((SortOptionItem)optionSelected).getValue();
             if (sort!=currentSort){
                 currentSort = sort;
-                homeFragment = HomeFragment.newInstance(currentSort.toString());
+                String sortOption = currentSort!=null? currentSort.toString():null;
+                homeFragment = HomeFragment.newInstance(sortOption);
                 String homeTag = HomeFragment.tag.name();
                 getSupportFragmentManager().beginTransaction().replace(R.id.homeContainer, homeFragment,homeTag).commit();
                 if(isTablet()){
@@ -129,11 +148,6 @@ public class HomeActivity extends AppCompatActivity implements FragmentInteracto
     @Override
     public boolean isTablet() {
         return detailFragment!=null || detailContainer!=null;
-    }
-
-    @Override
-    public boolean isLandscape() {
-        return getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE;
     }
 
     @Override
@@ -152,6 +166,21 @@ public class HomeActivity extends AppCompatActivity implements FragmentInteracto
         transaction.commit();
     }
 
+    @Override
+    public void updateFavorited(Movie movie) {
+        if (isTablet()){
+            ((DetailFragment)detailFragment).updateFavorited(movie);
+        }
+    }
+
+    @Override
+    public void updateSpinner() {
+        boolean withFavorited = dbHelper.isMovieFavorited();
+        if (spinner!=null){
+            ((SortOptionsAdapter)spinner.getAdapter()).updateFavoriteItem(withFavorited, getString(R.string.sort_label_favorites));
+        }
+    }
+
     public int getSortSelected() {
         int sortSelected = -1;
         if (currentSort!=null){
@@ -162,15 +191,31 @@ public class HomeActivity extends AppCompatActivity implements FragmentInteracto
             } else if (currentSort == Sort.VOTE){
                 sortSelected = 2;
             }
-
-            if (userSavedFavorites()) {
-                sortSelected += 1;
-            }
         } else {
-            sortSelected = 0;
+            sortSelected = 3;
         }
 
-
         return sortSelected;
+    }
+
+    public void installShortcut(){
+        if (preferencesHelper == null || preferencesHelper.isShortcutInstalled()){
+            return;
+        }
+
+        Intent shortcutIntent = new Intent();
+        shortcutIntent.setClassName(this, HomeActivity.class.getName());
+        shortcutIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        shortcutIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+
+        Intent addIntent = new Intent();
+        addIntent.putExtra(Intent.EXTRA_SHORTCUT_NAME, getString(R.string.app_name));
+        addIntent.putExtra(Intent.EXTRA_SHORTCUT_INTENT, shortcutIntent);
+        addIntent.putExtra(Intent.EXTRA_SHORTCUT_ICON_RESOURCE, Intent.ShortcutIconResource.fromContext(this, R.mipmap.ic_launcher));
+
+        addIntent.setAction("com.android.launcher.action.INSTALL_SHORTCUT");
+        this.sendBroadcast(addIntent);
+        preferencesHelper.saveValue(preferencesHelper.KEY_SHORTCUT_INSTALLED,true);
+
     }
 }

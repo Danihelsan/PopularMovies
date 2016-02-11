@@ -124,7 +124,7 @@
         <View
             android:id="@+id/separator"
             android:layout_width="match_parent"
-            android:layout_height="1dp"
+            android:layout_height="2dp"
             android:layout_below="@id/detailContainer"
             android:layout_marginLeft="10dp"
             android:layout_marginRight="10dp"

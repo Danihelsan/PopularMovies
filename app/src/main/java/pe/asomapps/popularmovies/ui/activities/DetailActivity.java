@@ -2,7 +2,6 @@ package pe.asomapps.popularmovies.ui.activities;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 
@@ -12,7 +11,7 @@ import pe.asomapps.popularmovies.ui.fragments.DetailFragment;
 /**
  * Created by Danihelsan
  */
-public class DetailActivity extends AppCompatActivity {
+public class DetailActivity extends BaseActivity {
     Fragment detailFragment;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
