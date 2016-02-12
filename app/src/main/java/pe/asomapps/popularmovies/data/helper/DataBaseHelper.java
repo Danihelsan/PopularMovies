@@ -130,6 +130,14 @@ public class DataBaseHelper {
         resolver.bulkInsert(AppProvider.REVIEWS.REVIEWS_URI, contentValues);
     }
 
+    public void insertReviews(List<Review> reviews, Movie movie) {
+        ContentValues[] contentValues = new ContentValues[reviews.size()];
+        for (int i = 0; i < reviews.size(); i++) {
+            contentValues[i] = Review.getContentValue(reviews.get(i), movie.getId());
+        }
+        resolver.bulkInsert(AppProvider.REVIEWS.REVIEWS_URI, contentValues);
+    }
+
     private void insertVideos(Movie movie) {
         ContentValues[] contentValues = new ContentValues[movie.getVideos().getResults().size()];
         for (int i = 0; i < movie.getVideos().getResults().size(); i++) {
@@ -143,6 +151,18 @@ public class DataBaseHelper {
         resolver.delete(AppProvider.REVIEWS.withMovieId(movieId), null, null);
         int number = resolver.delete(AppProvider.MOVIES.withId(movieId), null, null);
         return number;
+    }
+
+    public Movie getMovieFavorited(long movieId) {
+        Cursor cursor = resolver.query(AppProvider.MOVIES.withId(movieId),null,null,null,null);
+        if (cursor.getCount()==1){
+            cursor.moveToNext();
+            Movie movie = getMovieFromCursor(cursor);
+            movie.setVideos(getVideos(movie.getId()));
+            movie.setReviews(getReviews(movie.getId()));
+            return movie;
+        }
+        return null;
     }
 
     public boolean isMovieFavorited(long movieId) {

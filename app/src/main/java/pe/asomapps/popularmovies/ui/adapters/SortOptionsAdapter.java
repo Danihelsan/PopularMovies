@@ -19,6 +19,7 @@ public class SortOptionsAdapter extends BaseAdapter{
     private final int resLayoutDropdownId = R.layout.item_sortoptions_dropdown_spinner;
 
     private List<Sortable> items;
+    private int selectedPosition;
 
     public SortOptionsAdapter(List<Sortable> items){
         this.items = items;

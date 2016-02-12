@@ -111,7 +111,15 @@ public class HomeActivity extends BaseActivity {
             @Override
             public void onItemSelected(AdapterView<?> spinner, View view, int position, long itemId) {
                 if (spinner.getAdapter() instanceof SortOptionsAdapter) {
-                    onOptionSelected(((SortOptionsAdapter) spinner.getAdapter()).getSortOption(position));
+                    SortOptionsAdapter adapter = (SortOptionsAdapter) spinner.getAdapter();
+                    onOptionSelected(adapter.getSortOption(position));
+
+                    if (firstTime){
+                        firstTime = false;
+                    } else {
+                        Fragment fragment = DetailFragment.newInstance(null);
+                        loadDetail(fragment,null);
+                    }
                 }
             }
 
@@ -123,6 +131,8 @@ public class HomeActivity extends BaseActivity {
         spinner.setSelection(getSortSelected());
 
     }
+
+    boolean firstTime = true;
 
     private boolean userSavedFavorites() {
         return dbHelper.isMovieFavorited();

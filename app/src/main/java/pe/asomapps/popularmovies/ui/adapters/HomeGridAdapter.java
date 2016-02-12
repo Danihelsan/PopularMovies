@@ -43,17 +43,21 @@ public class HomeGridAdapter<T> extends RecyclerView.Adapter<ViewHolder>{
     private MovieClickListener movieClickListener;
     private OnLoadMoreListener onLoadMoreListener;
 
+    private boolean isFavorite = false;
+
     private int firstVisibleItem, visibleItemCount, totalItemCount, previousTotal = 0;
     private boolean loading = true;
 
-    public HomeGridAdapter(RecyclerView recyclerView, List<T> items, OnLoadMoreListener onLoadMoreListener, MovieClickListener movieClickListener,FragmentInteractor interactor) {
+    public HomeGridAdapter(RecyclerView recyclerView, List<T> items, OnLoadMoreListener onLoadMoreListener, MovieClickListener movieClickListener,FragmentInteractor interactor, boolean isFavorite) {
         this.items = items;
         this.movieClickListener = movieClickListener;
         this.onLoadMoreListener = onLoadMoreListener;
+        this.isFavorite = isFavorite;
+
         customRecyclerView(recyclerView, interactor);
     }
 
-    private void customRecyclerView(final RecyclerView recyclerView,FragmentInteractor interactor) {
+    private void customRecyclerView(final RecyclerView recyclerView,FragmentInteractor interactor ) {
         final int numColumns = recyclerView.getContext().getResources().getConfiguration().orientation + 1;
         final GridLayoutManager recyclerViewManager = new GridLayoutManager(recyclerView.getContext(),numColumns);
 
@@ -76,31 +80,33 @@ public class HomeGridAdapter<T> extends RecyclerView.Adapter<ViewHolder>{
             }
         });
 
-        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            @Override
-            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-                totalItemCount = recyclerViewManager.getItemCount();
-                visibleItemCount = recyclerViewManager.getChildCount();
-                firstVisibleItem = recyclerViewManager.findFirstVisibleItemPosition();
+        if (isFavorite){
+            recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+                @Override
+                public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                    totalItemCount = recyclerViewManager.getItemCount();
+                    visibleItemCount = recyclerViewManager.getChildCount();
+                    firstVisibleItem = recyclerViewManager.findFirstVisibleItemPosition();
 
-                if (loading) {
-                    if (totalItemCount > previousTotal) {
-                        loading = false;
-                        previousTotal = totalItemCount;
+                    if (loading) {
+                        if (totalItemCount > previousTotal) {
+                            loading = false;
+                            previousTotal = totalItemCount;
+                        }
+                    }
+                    if (!loading && (totalItemCount - visibleItemCount)
+                            <= (firstVisibleItem + VISIBLE_THRESHOLD)) {
+                        // End has been reached
+
+                        addItem(null);
+                        if (onLoadMoreListener != null) {
+                            onLoadMoreListener.onLoadMore();
+                        }
+                        loading = true;
                     }
                 }
-                if (!loading && (totalItemCount - visibleItemCount)
-                        <= (firstVisibleItem + VISIBLE_THRESHOLD)) {
-                    // End has been reached
-
-                    addItem(null);
-                    if (onLoadMoreListener != null) {
-                        onLoadMoreListener.onLoadMore();
-                    }
-                    loading = true;
-                }
-            }
         });
+        }
 
         recyclerView.setLayoutManager(recyclerViewManager);
     }
@@ -284,6 +290,12 @@ public class HomeGridAdapter<T> extends RecyclerView.Adapter<ViewHolder>{
         }
     }
 
+    public void removeItem(int index) {
+        if (index != -1) {
+            this.items.remove(index);
+            notifyItemRemoved(index);
+        }
+    }
     public List<T> getItems() {
         return items;
     }

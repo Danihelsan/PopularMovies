@@ -6,7 +6,6 @@ import android.content.res.ColorStateList;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Parcelable;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.view.MenuItemCompat;
@@ -120,6 +119,10 @@ public class DetailFragment extends BaseFragment implements VideoListAdapter.Vid
                 movie = savedInstanceState.getParcelable(SAVE_MOVIE);
             }
         }
+
+        if (movie!=null && dbHelper.isMovieFavorited(movie.getId())){
+            movie = dbHelper.getMovieFavorited(movie.getId());
+        }
     }
 
     @Nullable
@@ -204,7 +207,9 @@ public class DetailFragment extends BaseFragment implements VideoListAdapter.Vid
             .use(GlidePalette.Profile.VIBRANT_DARK)
             .intoBackground(title)
             .intoBackground(detailLeftContainer)
-            .intoBackground(description);
+            .intoBackground(description)
+            .intoBackground(reviewsRV)
+            .intoBackground(videosRV);
         Glide.with(getContext()).load(movie.getPosterPath())
                 .listener(listener)
                 .placeholder(R.drawable.empty_movies)
@@ -213,9 +218,9 @@ public class DetailFragment extends BaseFragment implements VideoListAdapter.Vid
 
         boolean shouldLoadDetail = false;
         if (movie.getRuntime()==0){
+            shouldLoadDetail = true;
             time.setText(getString(R.string.information_loading));
         } else {
-            shouldLoadDetail = true;
             time.setText(getString(R.string.detail_runtime,movie.getRuntime()));
         }
 
@@ -246,10 +251,6 @@ public class DetailFragment extends BaseFragment implements VideoListAdapter.Vid
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
-        if (reviewsRV.getAdapter() instanceof ReviewsListAdapter){
-            List items = ((ReviewsListAdapter)reviewsRV.getAdapter()).getItems();
-            outState.putParcelableArrayList(SAVE_ITEM_LIST, (ArrayList<? extends Parcelable>) items);
-        }
         outState.putInt(SAVE_NEXT_PAGE,nextPageToLoad);
         outState.putParcelable(SAVE_MOVIE,movie);
         super.onSaveInstanceState(outState);
@@ -304,7 +305,17 @@ public class DetailFragment extends BaseFragment implements VideoListAdapter.Vid
                 int runtime = response.body().getRuntime();
                 displayRuntime(runtime);
 
+                if (movie.getReviews()!=null){
+                    response.body().setReviews(movie.getReviews());
+                    response.body().setFavorited(movie.isFavorited());
+                }
                 movie = response.body();
+                if (movie.isFavorited()){
+                    if (dbHelper.isMovieFavorited(movie.getId())){
+                        dbHelper.deleteMovieFavorited(movie.getId());
+                    }
+                    dbHelper.insertMovieToFavorites(movie);
+                }
                 if (movie.getVideos()!=null){
                     displayVideos(movie.getVideos().getResults());
                 }
@@ -321,6 +332,18 @@ public class DetailFragment extends BaseFragment implements VideoListAdapter.Vid
         @Override
         public void onResponse(Response<ReviewsResponse> response, Retrofit retrofit) {
             if (isAdded()){
+
+                if (movie.isFavorited()){
+                    if (dbHelper.isMovieFavorited(movie.getId())){
+                        dbHelper.insertReviews(response.body().getResults(),movie);
+                    }
+                    if (movie.getReviews()==null){
+                        ReviewsResponse reviewsResponse = new ReviewsResponse();
+                        reviewsResponse.setResults(new ArrayList<Review>());
+                        movie.setReviews(reviewsResponse);
+                    }
+                    movie.getReviews().getResults().addAll(response.body().getResults());
+                }
                 if (response.body().getResults()!=null){
                     displayReviews(response.body().getResults());
                 }
@@ -349,18 +372,20 @@ public class DetailFragment extends BaseFragment implements VideoListAdapter.Vid
             if (items.get(0)!=null){
                 items.add(0,null);
             }
-            setShareIntent();
+            if (!interactor.isTablet()){
+                setShareIntent();
+            }
             VideoListAdapter adapter = (VideoListAdapter)videosRV.getAdapter();
             adapter.addItems(items);
         }
     }
 
     private void displayReviews(List<Review> items) {
-        ReviewsListAdapter adapter = (ReviewsListAdapter)reviewsRV.getAdapter();
-        if (items.isEmpty() && items.isEmpty()){
+        if (items.isEmpty()){
             reviewsRV.setVisibility(View.GONE);
         } else{
             reviewsRV.setVisibility(View.VISIBLE);
+            ReviewsListAdapter adapter = (ReviewsListAdapter)reviewsRV.getAdapter();
             if (adapter.getItems().isEmpty()){
                 items.add(0,null);
             }
@@ -370,7 +395,7 @@ public class DetailFragment extends BaseFragment implements VideoListAdapter.Vid
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        inflater.inflate(R.menu.menu_detail, menu);
+        inflater.inflate(R.menu.menu_share, menu);
         super.onCreateOptionsMenu(menu, inflater);
     }
 
@@ -379,8 +404,7 @@ public class DetailFragment extends BaseFragment implements VideoListAdapter.Vid
         shareItem = menu.findItem(R.id.shareMenu);
         shareProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(shareItem);
 
-        VideoListAdapter adapter = (VideoListAdapter)videosRV.getAdapter();
-        if (adapter.getItems().isEmpty()){
+        if (movie.getVideos().getResults().isEmpty()){
             shareItem.setVisible(false);
         } else {
             shareItem.setVisible(true);
@@ -389,7 +413,7 @@ public class DetailFragment extends BaseFragment implements VideoListAdapter.Vid
     }
 
     private void setShareIntent() {
-        if (movie.getVideos()!=null && !movie.getVideos().getResults().isEmpty()){
+        if (!movie.getVideos().getResults().isEmpty()){
             Video video = movie.getVideos().getResults().get(1);
             Intent shareIntent = new Intent(Intent.ACTION_SEND);
             shareIntent.setType("text/plain");

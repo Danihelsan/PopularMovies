@@ -5,8 +5,13 @@ import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.ShareActionProvider;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -44,6 +49,9 @@ public class HomeFragment extends BaseFragment implements OnLoadMoreListener, Mo
 
     @Bind(R.id.moviesRV) RecyclerView moviesRV;
 
+    private ShareActionProvider shareProvider;
+    private MenuItem shareItem;
+
     private int nextPageToLoad;
 
     private String currentSort;
@@ -52,9 +60,7 @@ public class HomeFragment extends BaseFragment implements OnLoadMoreListener, Mo
 
     public static HomeFragment newInstance(String sortOption) {
         Bundle bundle = new Bundle();
-        if (sortOption!=null) {
-            bundle.putString(KEY_SORTOPTION, sortOption);
-        }
+        bundle.putString(KEY_SORTOPTION, sortOption);
         HomeFragment fragment = new HomeFragment();
         fragment.setArguments(bundle);
         return fragment;
@@ -87,7 +93,11 @@ public class HomeFragment extends BaseFragment implements OnLoadMoreListener, Mo
         View rootView = inflater.inflate(R.layout.fragment_home,container,false);
         ButterKnife.bind(this,rootView);
 
-        HomeGridAdapter adapter = new HomeGridAdapter(moviesRV, new ArrayList(), this, this, interactor);
+        if (interactor.isTablet()){
+            setHasOptionsMenu(true);
+        }
+
+        HomeGridAdapter adapter = new HomeGridAdapter(moviesRV, new ArrayList(), this, this, interactor, currentSort!=null);
         moviesRV.setAdapter(adapter);
         return rootView;
     }
@@ -187,6 +197,7 @@ public class HomeFragment extends BaseFragment implements OnLoadMoreListener, Mo
     @Override
     public boolean onFavoritedClicked(int position, Movie movie) {
         boolean dbUpdated = false;
+        boolean isremoved = false;
         if (!dbHelper.isMovieFavorited(movie.getId())) {
             movie.setFavorited(true);
             if (dbHelper.insertMovieToFavorites(movie) > 0) {
@@ -195,26 +206,47 @@ public class HomeFragment extends BaseFragment implements OnLoadMoreListener, Mo
         } else if (dbHelper.deleteMovieFavorited(movie.getId()) > 0) {
             movie.setFavorited(false);
             dbUpdated = true;
+            isremoved = true;
         }
 
         if (dbUpdated){
             interactor.updateSpinner();
+
+            if (isremoved && currentSort==null){
+                ((HomeGridAdapter)moviesRV.getAdapter()).removeItem(position);
+            } else {
+                moviesRV.getAdapter().notifyItemChanged(position);
+            }
             if (!interactor.isTablet()){
                 interactor.updateFavorited(movie);
             }
-            moviesRV.getAdapter().notifyItemChanged(position);
         }
         return false;
     }
 
     @Override
     public void onLoadMore() {
-        loadMoreMovies();
+        if (currentSort!=null){
+            loadMoreMovies();
+        }
     }
 
     @Override
     public boolean onLoadMoreItemClicked() {
         loadMoreMovies();
         return true;
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.menu_share, menu);
+        super.onCreateOptionsMenu(menu, inflater);
+    }
+
+    @Override
+    public void onPrepareOptionsMenu(Menu menu) {
+        shareItem = menu.findItem(R.id.shareMenu);
+        shareProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(shareItem);
+        super.onPrepareOptionsMenu(menu);
     }
 }
