@@ -108,10 +108,10 @@ public class DataBaseHelper {
     public long insertMovieToFavorites(Movie movie) {
         long movieId = insertMovieToFavorites(Movie.getContentValue(movie));
 
-        if (movie.getReviews()!=null && !movie.getReviews().getResults().isEmpty()) {
+        if (movie.getReviews()!=null && movie.getReviews().getResults()!=null && !movie.getReviews().getResults().isEmpty()) {
             insertReviews(movie);
         }
-        if (movie.getVideos()!=null && !movie.getVideos().getResults().isEmpty()) {
+        if (movie.getVideos()!=null && movie.getVideos().getResults()!=null && !movie.getVideos().getResults().isEmpty()) {
             insertVideos(movie);
         }
         return movieId;
@@ -123,14 +123,21 @@ public class DataBaseHelper {
     }
 
     private void insertReviews(Movie movie) {
-        ContentValues[] contentValues = new ContentValues[movie.getReviews().getResults().size()];
-        for (int i = 0; i < movie.getReviews().getResults().size(); i++) {
-            contentValues[i] = Review.getContentValue(movie.getReviews().getResults().get(i), movie.getId());
+        List<Review> reviews =  movie.getReviews().getResults();
+        if (reviews.get(0)==null){
+            reviews = reviews.subList(1,reviews.size());
+        }
+        ContentValues[] contentValues = new ContentValues[reviews.size()];
+        for (int i = 0; i < reviews.size(); i++) {
+            contentValues[i] = Review.getContentValue(reviews.get(i), movie.getId());
         }
         resolver.bulkInsert(AppProvider.REVIEWS.REVIEWS_URI, contentValues);
     }
 
     public void insertReviews(List<Review> reviews, Movie movie) {
+        if (reviews.get(0)==null){
+            reviews = reviews.subList(1,reviews.size());
+        }
         ContentValues[] contentValues = new ContentValues[reviews.size()];
         for (int i = 0; i < reviews.size(); i++) {
             contentValues[i] = Review.getContentValue(reviews.get(i), movie.getId());
@@ -139,9 +146,13 @@ public class DataBaseHelper {
     }
 
     private void insertVideos(Movie movie) {
-        ContentValues[] contentValues = new ContentValues[movie.getVideos().getResults().size()];
-        for (int i = 0; i < movie.getVideos().getResults().size(); i++) {
-            contentValues[i] = Video.getContentValue(movie.getVideos().getResults().get(i), movie.getId());
+        List<Video> videos =  movie.getVideos().getResults();
+        if (videos.get(0)==null){
+            videos = videos.subList(1,videos.size());
+        }
+        ContentValues[] contentValues = new ContentValues[videos.size()];
+        for (int i = 0; i < videos.size(); i++) {
+            contentValues[i] = Video.getContentValue(videos.get(i), movie.getId());
         }
         resolver.bulkInsert(AppProvider.VIDEOS.VIDEOS_URI, contentValues);
     }

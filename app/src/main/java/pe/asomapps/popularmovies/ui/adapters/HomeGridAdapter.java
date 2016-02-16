@@ -134,9 +134,9 @@ public class HomeGridAdapter<T> extends RecyclerView.Adapter<ViewHolder>{
 
                     if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
                         MovieHolder holder = new MovieHolder(v);
-                        movieClickListener.onMovieClicked(movie, holder.poster, holder.favorite);
+                        movieClickListener.onMovieClicked(position, movie, holder.poster, holder.favorite);
                     } else{
-                        movieClickListener.onMovieClicked(movie);
+                        movieClickListener.onMovieClicked(position, movie);
                     }
                 }
             }
@@ -147,9 +147,13 @@ public class HomeGridAdapter<T> extends RecyclerView.Adapter<ViewHolder>{
         holder.favorite.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                int position = (Integer) view.getTag();
-                Movie movie = (Movie) items.get(position);
-                movieClickListener.onFavoritedClicked(position, movie);
+                int movieId = (Integer) view.getTag();
+                for (int i=0;i<items.size();i++){
+                    Movie movie = (Movie) getItems().get(i);
+                    if (movie.getId() == movieId){
+                        movieClickListener.onFavoritedClicked(i, movie);
+                    }
+                }
             }
         });
         return holder;
@@ -190,7 +194,7 @@ public class HomeGridAdapter<T> extends RecyclerView.Adapter<ViewHolder>{
             RequestListener listener = GlidePalette.with(imageUrl).use(GlidePalette.Profile.VIBRANT).intoBackground(itemHolder.rootView);
             Glide.with(holder.itemView.getContext()).load(imageUrl).listener(listener).placeholder(R.drawable.empty_movies).dontAnimate().into(itemHolder.poster);
 
-            itemHolder.favorite.setTag(position);
+            itemHolder.favorite.setTag(movie.getId());
             if (movie.isFavorited()){
                 itemHolder.favorite.setBackgroundResource(R.drawable.favorite_unselector);
             } else {

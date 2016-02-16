@@ -19,10 +19,6 @@ public class PreferencesHelper {
         appPreferences = app.getSharedPreferences(DEFAULT_PREFERENCES, Activity.MODE_PRIVATE);
     }
 
-    public SharedPreferences getAppPreferences(){
-        return appPreferences;
-    }
-
     public boolean isShortcutInstalled(){
         return appPreferences.getBoolean(KEY_SHORTCUT_INSTALLED,false);
     }
@@ -30,17 +26,17 @@ public class PreferencesHelper {
     public boolean saveValue(String key, Object value){
         SharedPreferences.Editor editor = appPreferences.edit();
         if (value instanceof String){
-            appPreferences.edit().putString(key, (String) value).commit();
+            editor.putString(key, (String) value).apply();
         } else if (value instanceof Integer){
-            appPreferences.edit().putInt(key, (Integer) value).commit();
+            editor.putInt(key, (Integer) value).apply();
         } else if (value instanceof Boolean){
-            appPreferences.edit().putBoolean(key, (Boolean) value).commit();
+            editor.putBoolean(key, (Boolean) value).apply();
         } else if (value instanceof Float){
-            appPreferences.edit().putFloat(key, (Float) value).commit();
+            editor.putFloat(key, (Float) value).apply();
         } else if (value instanceof Long){
-            appPreferences.edit().putLong(key, (Long) value).commit();
+            editor.putLong(key, (Long) value).apply();
         } else if (value instanceof Set){
-            appPreferences.edit().putStringSet(key, (Set<String>) value).commit();
+            editor.putStringSet(key, (Set<String>) value).apply();
         } else{
             return false;
         }

@@ -1,5 +1,6 @@
 package pe.asomapps.popularmovies.ui.fragments;
 
+import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.content.res.ColorStateList;
@@ -59,6 +60,7 @@ public class DetailFragment extends BaseFragment implements VideoListAdapter.Vid
 
     private final String FORMAT_RATING = "#.#";
     public static final String KEY_MOVIE = "movie_";
+    public static final String KEY_POSITION = "position_";
     public static final String KEY_POSTER = "poster_";
     public static final String KEY_FAVORITE = "favorite_";
 
@@ -102,6 +104,7 @@ public class DetailFragment extends BaseFragment implements VideoListAdapter.Vid
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        getActivity().setResult(Activity.RESULT_CANCELED,null);
         interactor = (getActivity() instanceof FragmentInteractor)? (FragmentInteractor) getActivity() :null;
 
         if(savedInstanceState == null){
@@ -163,23 +166,35 @@ public class DetailFragment extends BaseFragment implements VideoListAdapter.Vid
     }
 
     private void favoriteAction(View view) {
+        boolean dbUpdated = false;
+        boolean isRemoved = false;
         if (!dbHelper.isMovieFavorited(movie.getId())) {
+            movie.setFavorited(true);
             if (dbHelper.insertMovieToFavorites(movie) > 0) {
-                if (!interactor.isTablet()){
-                    favoriteAction.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.primary_color_unselector)));
-                }
-                movie.setFavorited(true);
-                //TODO INSERT REVIEWS IN MOVIE ENTITY
-                //TODO INSERT IN DB
+                dbUpdated = true;
             }
-        } else {
-            if (dbHelper.deleteMovieFavorited(movie.getId()) > 0) {
-                if (!interactor.isTablet()){
+        } else if (dbHelper.deleteMovieFavorited(movie.getId()) > 0) {
+            movie.setFavorited(false);
+            dbUpdated = true;
+            isRemoved = true;
+        }
+
+
+        if (dbUpdated){
+            if (!interactor.isTablet()){
+                if (!isRemoved){
+                    favoriteAction.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.primary_color_unselector)));
+                } else{
                     favoriteAction.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.primary_color_selector)));
                 }
-                movie.setFavorited(false);
-                //TODO DELETE FROM DB
             }
+
+            Intent intent = new Intent();
+            Bundle bundle = new Bundle();
+            bundle.putBoolean(KEY_FAVORITE,movie.isFavorited());
+            bundle.putInt(KEY_POSITION,getArguments().getInt(KEY_POSITION));
+            intent.putExtras(bundle);
+            getActivity().setResult(Activity.RESULT_OK,intent);
         }
     }
 
@@ -334,7 +349,8 @@ public class DetailFragment extends BaseFragment implements VideoListAdapter.Vid
             if (isAdded()){
 
                 if (movie.isFavorited()){
-                    if (dbHelper.isMovieFavorited(movie.getId())){
+                    if (dbHelper.isMovieFavorited(movie.getId()) &&
+                            !response.body().getResults().isEmpty()){
                         dbHelper.insertReviews(response.body().getResults(),movie);
                     }
                     if (movie.getReviews()==null){
@@ -378,6 +394,8 @@ public class DetailFragment extends BaseFragment implements VideoListAdapter.Vid
             VideoListAdapter adapter = (VideoListAdapter)videosRV.getAdapter();
             adapter.addItems(items);
         }
+
+        changeItemVisibility(movie,shareItem);
     }
 
     private void displayReviews(List<Review> items) {
@@ -404,12 +422,19 @@ public class DetailFragment extends BaseFragment implements VideoListAdapter.Vid
         shareItem = menu.findItem(R.id.shareMenu);
         shareProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(shareItem);
 
-        if (movie.getVideos().getResults().isEmpty()){
-            shareItem.setVisible(false);
-        } else {
-            shareItem.setVisible(true);
-        }
+        changeItemVisibility(movie,shareItem);
+
         super.onPrepareOptionsMenu(menu);
+    }
+
+    private void changeItemVisibility(Movie movie, MenuItem item) {
+        if (item!=null){
+            if (movie.getVideos()!=null && movie.getVideos().getResults()!=null && movie.getVideos().getResults().isEmpty()){
+                item.setVisible(false);
+            } else {
+                item.setVisible(true);
+            }
+        }
     }
 
     private void setShareIntent() {

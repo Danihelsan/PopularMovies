@@ -30,6 +30,8 @@ import pe.asomapps.popularmovies.ui.utils.Sort;
 import pe.asomapps.popularmovies.ui.utils.SortOptionItem;
 
 public class HomeActivity extends BaseActivity {
+    public static final int CODE_DETAIL = 10001;
+
     private final String SAVE_SORTOPTION = "sort_option";
     Fragment homeFragment, detailFragment;
     FrameLayout homeContainer,detailContainer;
@@ -114,11 +116,13 @@ public class HomeActivity extends BaseActivity {
                     SortOptionsAdapter adapter = (SortOptionsAdapter) spinner.getAdapter();
                     onOptionSelected(adapter.getSortOption(position));
 
-                    if (firstTime){
-                        firstTime = false;
-                    } else {
-                        Fragment fragment = DetailFragment.newInstance(null);
-                        loadDetail(fragment,null);
+                    if (isTablet()){
+                        if (firstTime){
+                            firstTime = false;
+                        } else {
+                            Fragment fragment = DetailFragment.newInstance(null);
+                            loadDetail(fragment,null);
+                        }
                     }
                 }
             }
@@ -227,5 +231,18 @@ public class HomeActivity extends BaseActivity {
         this.sendBroadcast(addIntent);
         preferencesHelper.saveValue(preferencesHelper.KEY_SHORTCUT_INSTALLED,true);
 
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == CODE_DETAIL) {
+            if (resultCode == RESULT_OK){
+                Bundle bundle = data.getExtras();
+                ((HomeFragment)homeFragment).updateFavorited(
+                        bundle.getInt(DetailFragment.KEY_POSITION),
+                        bundle.getBoolean(DetailFragment.KEY_FAVORITE));
+            }
+        }
+        super.onActivityResult(requestCode, resultCode, data);
     }
 }

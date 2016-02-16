@@ -8,6 +8,6 @@ import pe.asomapps.popularmovies.model.Movie;
  * Created by Danihelsan
  */
 public interface MovieClickListener {
-    boolean onMovieClicked(Movie movie, View... views);
+    boolean onMovieClicked(int position, Movie movie, View... views);
     boolean onFavoritedClicked(int position, Movie movie);
 }

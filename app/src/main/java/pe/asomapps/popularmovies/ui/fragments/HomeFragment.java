@@ -25,6 +25,7 @@ import pe.asomapps.popularmovies.R;
 import pe.asomapps.popularmovies.model.Movie;
 import pe.asomapps.popularmovies.model.responses.DiscoverMoviesResponse;
 import pe.asomapps.popularmovies.ui.activities.DetailActivity;
+import pe.asomapps.popularmovies.ui.activities.HomeActivity;
 import pe.asomapps.popularmovies.ui.adapters.HomeGridAdapter;
 import pe.asomapps.popularmovies.ui.interfaces.FragmentInteractor;
 import pe.asomapps.popularmovies.ui.interfaces.MovieClickListener;
@@ -180,13 +181,14 @@ public class HomeFragment extends BaseFragment implements OnLoadMoreListener, Mo
     }
 
     @Override
-    public boolean onMovieClicked(Movie movie, View[] sharedViews) {
+    public boolean onMovieClicked(int position, Movie movie, View[] sharedViews) {
         if (!interactor.isTablet()){
             Bundle bundle = new Bundle();
             bundle.putParcelable(DetailFragment.KEY_MOVIE,movie);
+            bundle.putInt(DetailFragment.KEY_POSITION,position);
             Intent intent = new Intent(getContext(), DetailActivity.class);
             intent.putExtras(bundle);
-            openNewScreen(intent, sharedViews);
+            openNewScreen(intent, HomeActivity.CODE_DETAIL, sharedViews);
         } else{
             Fragment fragment = DetailFragment.newInstance(movie);
             interactor.loadDetail(fragment,sharedViews);
@@ -197,7 +199,7 @@ public class HomeFragment extends BaseFragment implements OnLoadMoreListener, Mo
     @Override
     public boolean onFavoritedClicked(int position, Movie movie) {
         boolean dbUpdated = false;
-        boolean isremoved = false;
+        boolean isRemoved = false;
         if (!dbHelper.isMovieFavorited(movie.getId())) {
             movie.setFavorited(true);
             if (dbHelper.insertMovieToFavorites(movie) > 0) {
@@ -206,22 +208,27 @@ public class HomeFragment extends BaseFragment implements OnLoadMoreListener, Mo
         } else if (dbHelper.deleteMovieFavorited(movie.getId()) > 0) {
             movie.setFavorited(false);
             dbUpdated = true;
-            isremoved = true;
+            isRemoved = true;
         }
 
         if (dbUpdated){
-            interactor.updateSpinner();
+            updateFavorited(position,!isRemoved);
 
-            if (isremoved && currentSort==null){
-                ((HomeGridAdapter)moviesRV.getAdapter()).removeItem(position);
-            } else {
-                moviesRV.getAdapter().notifyItemChanged(position);
-            }
             if (!interactor.isTablet()){
                 interactor.updateFavorited(movie);
             }
         }
         return false;
+    }
+
+    public void updateFavorited(int position, boolean favorited) {
+        if (!favorited && currentSort==null){
+            ((HomeGridAdapter)moviesRV.getAdapter()).removeItem(position);
+        } else {
+            ((Movie)((HomeGridAdapter)moviesRV.getAdapter()).getItems().get(position)).setFavorited(favorited);
+            moviesRV.getAdapter().notifyItemChanged(position);
+        }
+        interactor.updateSpinner();
     }
 
     @Override

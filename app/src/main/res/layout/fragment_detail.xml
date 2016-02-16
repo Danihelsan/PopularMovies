@@ -119,7 +119,7 @@
             android:maxLines="4"
             android:text="@string/lorem_ipsum"
             android:textColor="@color/colorWhiteText"
-            tools:background="@color/colorPrimaryDark" />
+            android:background="@color/colorPrimary" />
 
         <View
             android:id="@+id/separator"

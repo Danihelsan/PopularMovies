@@ -118,7 +118,7 @@
                 android:maxLines="10"
                 android:text="@string/lorem_ipsum"
                 android:textColor="@color/colorWhiteText"
-                tools:background="@color/colorPrimaryDark" />
+                android:background="@color/colorPrimary" />
         </LinearLayout>
 
         <View
