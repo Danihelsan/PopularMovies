@@ -33,10 +33,12 @@ public class HomeActivity extends BaseActivity {
     public static final int CODE_DETAIL = 10001;
 
     private final String SAVE_SORTOPTION = "sort_option";
+    private final String SAVE_FIRSTTIME = "first_time";
     Fragment homeFragment, detailFragment;
     FrameLayout homeContainer,detailContainer;
     private Spinner spinner;
     private Sort currentSort;
+    private boolean firstTime = true;
 
     @Inject
     PreferencesHelper preferencesHelper;
@@ -56,30 +58,46 @@ public class HomeActivity extends BaseActivity {
         detailContainer = (FrameLayout)findViewById(R.id.detailContainer);
 
         currentSort = Sort.POPULARITY;
-        if (savedInstanceState!=null && savedInstanceState.containsKey(SAVE_SORTOPTION) ){
-            if (savedInstanceState.getString(SAVE_SORTOPTION)!=null){
-                currentSort = Sort.fromString(savedInstanceState.getString(SAVE_SORTOPTION));
-            } else{
-                currentSort = null;
+        if (savedInstanceState!=null){
+            if (savedInstanceState.containsKey(SAVE_SORTOPTION)){
+                if (savedInstanceState.getString(SAVE_SORTOPTION)!=null){
+                    currentSort = Sort.fromString(savedInstanceState.getString(SAVE_SORTOPTION));
+                } else{
+                    currentSort = null;
+                }
+            }
+            if (savedInstanceState.containsKey(SAVE_FIRSTTIME)){
+                firstTime = savedInstanceState.getBoolean(SAVE_FIRSTTIME);
+            } else {
+                firstTime = true;
             }
         }
 
         String homeTag = HomeFragment.tag.name();
+
+        FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+        boolean shouldCommit = false;
         if (getSupportFragmentManager().findFragmentByTag(homeTag)==null){
             homeFragment = HomeFragment.newInstance(currentSort.toString());
-            getSupportFragmentManager().beginTransaction().replace(R.id.homeContainer, homeFragment,homeTag).commit();
+            fragmentTransaction.replace(R.id.homeContainer, homeFragment,homeTag);
+            shouldCommit = true;
         } else{
             homeFragment = getSupportFragmentManager().findFragmentByTag(homeTag);
         }
 
-        if (detailContainer!=null){
+        if (isTablet() && detailContainer!=null){
             String detailTag = DetailFragment.tag.name();
             if (getSupportFragmentManager().findFragmentByTag(homeTag)==null){
                 detailFragment = DetailFragment.newInstance();
-                loadDetail(detailFragment, null);
+                loadDetail(fragmentTransaction, detailFragment, null);
+                shouldCommit = true;
             } else{
                 detailFragment = getSupportFragmentManager().findFragmentByTag(detailTag);
             }
+        }
+
+        if (shouldCommit){
+            fragmentTransaction.commit();
         }
 
         configureToolBar();
@@ -90,6 +108,7 @@ public class HomeActivity extends BaseActivity {
     protected void onSaveInstanceState(Bundle outState) {
         String sortOption = currentSort!=null?currentSort.toString():null;
         outState.putString(SAVE_SORTOPTION,sortOption);
+        outState.putBoolean(SAVE_FIRSTTIME,firstTime);
         super.onSaveInstanceState(outState);
     }
 
@@ -118,10 +137,9 @@ public class HomeActivity extends BaseActivity {
 
                     if (isTablet()){
                         if (firstTime){
-                            firstTime = false;
-                        } else {
                             Fragment fragment = DetailFragment.newInstance(null);
-                            loadDetail(fragment,null);
+                            loadDetail(null, fragment,null);
+                            firstTime = false;
                         }
                     }
                 }
@@ -136,8 +154,6 @@ public class HomeActivity extends BaseActivity {
 
     }
 
-    boolean firstTime = true;
-
     private boolean userSavedFavorites() {
         return dbHelper.isMovieFavorited();
     }
@@ -150,10 +166,13 @@ public class HomeActivity extends BaseActivity {
                 String sortOption = currentSort!=null? currentSort.toString():null;
                 homeFragment = HomeFragment.newInstance(sortOption);
                 String homeTag = HomeFragment.tag.name();
-                getSupportFragmentManager().beginTransaction().replace(R.id.homeContainer, homeFragment,homeTag).commit();
+
+                FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+                fragmentTransaction.replace(R.id.homeContainer, homeFragment,homeTag);
                 if(isTablet()){
-                    loadDetail(detailFragment, null);
+                    loadDetail(fragmentTransaction, detailFragment, null);
                 }
+                fragmentTransaction.commit();
             }
         }
 
@@ -165,19 +184,28 @@ public class HomeActivity extends BaseActivity {
     }
 
     @Override
-    public void loadDetail(Fragment fragment, View[] sharedViews) {
-        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction().replace(R.id.detailContainer, fragment, DetailFragment.tag.name());
+    public boolean loadDetail(FragmentTransaction fragmentTransaction, Fragment fragment, View[] sharedViews) {
+        boolean immediateCommit = fragmentTransaction==null;
+        if (fragmentTransaction==null) {
+            fragmentTransaction = getSupportFragmentManager().beginTransaction();
+        }
+        fragmentTransaction.replace(R.id.detailContainer, fragment, DetailFragment.tag.name());
         if (sharedViews!=null && sharedViews.length>0){
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                 Transition transition = TransitionInflater.from(this).inflateTransition(R.transition.home_detail_transition);
                 fragment.setSharedElementEnterTransition(transition);
                 for (int i=0;i<sharedViews.length;i++){
                     View view = sharedViews[i];
-                    transaction.addSharedElement(view,view.getTransitionName());
+                    fragmentTransaction.addSharedElement(view,view.getTransitionName());
                 }
             }
         }
-        transaction.commit();
+
+        if (immediateCommit){
+            fragmentTransaction.commit();
+        }
+
+        return !immediateCommit;
     }
 
     @Override
@@ -244,5 +272,13 @@ public class HomeActivity extends BaseActivity {
             }
         }
         super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    @Override
+    public void setShareIntent(Movie movie) {
+        super.setShareIntent(movie);
+        if (isTablet()){
+            ((HomeFragment)homeFragment).setShareIntent(movie);
+        }
     }
 }

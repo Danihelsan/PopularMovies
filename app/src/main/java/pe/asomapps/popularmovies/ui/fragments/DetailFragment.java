@@ -389,13 +389,13 @@ public class DetailFragment extends BaseFragment implements VideoListAdapter.Vid
                 items.add(0,null);
             }
             if (!interactor.isTablet()){
-                setShareIntent();
+                setShareIntent(movie,shareItem,shareProvider);
+            } else {
+                interactor.setShareIntent(movie);
             }
             VideoListAdapter adapter = (VideoListAdapter)videosRV.getAdapter();
             adapter.addItems(items);
         }
-
-        changeItemVisibility(movie,shareItem);
     }
 
     private void displayReviews(List<Review> items) {
@@ -421,35 +421,6 @@ public class DetailFragment extends BaseFragment implements VideoListAdapter.Vid
     public void onPrepareOptionsMenu(Menu menu) {
         shareItem = menu.findItem(R.id.shareMenu);
         shareProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(shareItem);
-
-        changeItemVisibility(movie,shareItem);
-
         super.onPrepareOptionsMenu(menu);
-    }
-
-    private void changeItemVisibility(Movie movie, MenuItem item) {
-        if (item!=null){
-            if (movie.getVideos()!=null && movie.getVideos().getResults()!=null && movie.getVideos().getResults().isEmpty()){
-                item.setVisible(false);
-            } else {
-                item.setVisible(true);
-            }
-        }
-    }
-
-    private void setShareIntent() {
-        if (!movie.getVideos().getResults().isEmpty()){
-            Video video = movie.getVideos().getResults().get(1);
-            Intent shareIntent = new Intent(Intent.ACTION_SEND);
-            shareIntent.setType("text/plain");
-            shareIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
-            shareIntent.putExtra(Intent.EXTRA_SUBJECT, getString(R.string.app_name));
-            shareIntent.putExtra(Intent.EXTRA_TEXT, video.getVideoPath());
-
-            if (shareProvider != null) {
-                shareProvider.setShareIntent(shareIntent);
-                getActivity().invalidateOptionsMenu();
-            }
-        }
     }
 }

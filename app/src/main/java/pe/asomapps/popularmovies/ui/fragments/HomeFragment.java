@@ -191,7 +191,7 @@ public class HomeFragment extends BaseFragment implements OnLoadMoreListener, Mo
             openNewScreen(intent, HomeActivity.CODE_DETAIL, sharedViews);
         } else{
             Fragment fragment = DetailFragment.newInstance(movie);
-            interactor.loadDetail(fragment,sharedViews);
+            interactor.loadDetail(null, fragment,sharedViews);
         }
         return true;
     }
@@ -255,5 +255,9 @@ public class HomeFragment extends BaseFragment implements OnLoadMoreListener, Mo
         shareItem = menu.findItem(R.id.shareMenu);
         shareProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(shareItem);
         super.onPrepareOptionsMenu(menu);
+    }
+
+    public void setShareIntent(Movie movie) {
+        setShareIntent(movie,shareItem,shareProvider);
     }
 }
